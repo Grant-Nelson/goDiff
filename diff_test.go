@@ -1,9 +1,30 @@
 package diff
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 )
+
+// printCostMatrix gets the cost matrix string.
+func (cm *costMatrix) String() string {
+	buf := &bytes.Buffer{}
+	buf.WriteString("[[")
+	for i, costRow := range cm.costs {
+		if i > 0 {
+			buf.WriteString("],\n [")
+		}
+		for j, cost := range costRow {
+			if j > 0 {
+				buf.WriteString(", ")
+			}
+			buf.WriteString(fmt.Sprint(cost))
+		}
+	}
+	buf.WriteString("]]\n")
+	return buf.String()
+}
 
 func TestLevenshteinDistance(t *testing.T) {
 	checkLP(t, "A", "A", "0")
@@ -43,6 +64,98 @@ func TestPartDiff(t *testing.T) {
 		"func A() int,{,return 10,},,func C() int,{,return 12,}",
 		"func A() int,{,return 10,},,func B() int,{,return 11,},,func C() int,{,return 12,}",
 		" func A() int, {, return 10, }, ,+func B() int,+{,+return 11,+},+, func C() int, {, return 12, }")
+	checkDiff(t, "\n",
+		strings.Join([]string{
+			`This part of the`,
+			`document has stayed the`,
+			`same from version to`,
+			`version.  It shouldn't`,
+			`be shown if it doesn't`,
+			`change.  Otherwise, that`,
+			`would not be helping to`,
+			`compress the size of the`,
+			`changes.`,
+			``,
+			`This paragraph contains`,
+			`text that is outdated.`,
+			`It will be deleted in the`,
+			`near future.`,
+			``,
+			`It is important to spell`,
+			`check this dokument. On`,
+			`the other hand, a`,
+			`misspelled word isn't`,
+			`the end of the world.`,
+			`Nothing in the rest of`,
+			`this paragraph needs to`,
+			`be changed. Things can`,
+			`be added after it.`}, "\n"),
+		strings.Join([]string{
+			`This is an important`,
+			`notice! It should`,
+			`therefore be located at`,
+			`the beginning of this`,
+			`document!`,
+			``,
+			`This part of the`,
+			`document has stayed the`,
+			`same from version to`,
+			`version.  It shouldn't`,
+			`be shown if it doesn't`,
+			`change.  Otherwise, that`,
+			`would not be helping to`,
+			`compress anything.`,
+			``,
+			`It is important to spell`,
+			`check this document. On`,
+			`the other hand, a`,
+			`misspelled word isn't`,
+			`the end of the world.`,
+			`Nothing in the rest of`,
+			`this paragraph needs to`,
+			`be changed. Things can`,
+			`be added after it.`,
+			``,
+			`This paragraph contains`,
+			`important new additions`,
+			`to this document.`}, "\n"),
+		strings.Join([]string{
+			`+This is an important`,
+			`+notice! It should`,
+			`+therefore be located at`,
+			`+the beginning of this`,
+			`+document!`,
+			`+`,
+			` This part of the`,
+			` document has stayed the`,
+			` same from version to`,
+			` version.  It shouldn't`,
+			` be shown if it doesn't`,
+			` change.  Otherwise, that`,
+			` would not be helping to`,
+			`-compress the size of the`,
+			`-changes.`,
+			`+compress anything.`,
+			` `,
+			`-This paragraph contains`,
+			`-text that is outdated.`,
+			`-It will be deleted in the`,
+			`-near future.`,
+			`-`,
+			` It is important to spell`,
+			`-check this dokument. On`,
+			`+check this document. On`,
+			` the other hand, a`,
+			` misspelled word isn't`,
+			` the end of the world.`,
+			` Nothing in the rest of`,
+			` this paragraph needs to`,
+			` be changed. Things can`,
+			` be added after it.`,
+			`+`,
+			`+This paragraph contains`,
+			`+important new additions`,
+			`+to this document.`}, "\n"))
 }
 
 // checks the levenshtein distance algorithm
