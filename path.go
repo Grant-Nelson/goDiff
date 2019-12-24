@@ -7,7 +7,7 @@ const (
 	// EqualStep indicates A and B entries are equal.
 	EqualStep StepType = iota
 
-	// AddedStep indicates B was added.
+	// AddedStep indicates A was added.
 	AddedStep
 
 	// RemovedStep indicates A was removed.

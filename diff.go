@@ -41,9 +41,8 @@ func PlusMinus(a, b []string) []string {
 	return result
 }
 
-// Merge gets the labelled difference between the two slices.
-// It formats the results by prepending a "+" to new strings in [b],
-// a "-" for any to removed strings from [a], and " " if the strings are the same.
+// Merge gets the labelled difference between the two slices
+// using a similar output to the git merge differences output.
 func Merge(a, b []string) []string {
 	result := []string{}
 	aIndex, bIndex := 0, 0
