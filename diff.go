@@ -13,7 +13,7 @@ func (comp *stringSliceComparable) Equals(aIndex, bIndex int) bool {
 }
 
 // StringSlicePath gets the difference path for the two given string slices.
-func StringSlicePath(a, b []string) []StepType {
+func StringSlicePath(a, b []string) []StepGroup {
 	return Path(&stringSliceComparable{a: a, b: b})
 }
 
@@ -25,17 +25,23 @@ func PlusMinus(a, b []string) []string {
 	aIndex, bIndex := 0, 0
 	path := StringSlicePath(a, b)
 	for _, step := range path {
-		switch step {
+		switch step.Step {
 		case EqualStep:
-			result = append(result, " "+a[aIndex])
-			aIndex++
-			bIndex++
+			for i := step.Count - 1; i >= 0; i-- {
+				result = append(result, " "+a[aIndex])
+				aIndex++
+				bIndex++
+			}
 		case AddedStep:
-			result = append(result, "+"+b[bIndex])
-			bIndex++
+			for i := step.Count - 1; i >= 0; i-- {
+				result = append(result, "+"+b[bIndex])
+				bIndex++
+			}
 		case RemovedStep:
-			result = append(result, "-"+a[aIndex])
-			aIndex++
+			for i := step.Count - 1; i >= 0; i-- {
+				result = append(result, "-"+a[aIndex])
+				aIndex++
+			}
 		}
 	}
 	return result
@@ -54,7 +60,7 @@ func Merge(a, b []string) []string {
 
 	prevState := EqualStep
 	for _, step := range path {
-		switch step {
+		switch step.Step {
 		case EqualStep:
 			switch prevState {
 			case AddedStep:
@@ -63,9 +69,11 @@ func Merge(a, b []string) []string {
 				result = append(result, middleChange)
 				result = append(result, endChange)
 			}
-			result = append(result, a[aIndex])
-			aIndex++
-			bIndex++
+			for i := step.Count - 1; i >= 0; i-- {
+				result = append(result, a[aIndex])
+				aIndex++
+				bIndex++
+			}
 
 		case AddedStep:
 			switch prevState {
@@ -75,8 +83,10 @@ func Merge(a, b []string) []string {
 			case RemovedStep:
 				result = append(result, middleChange)
 			}
-			result = append(result, b[bIndex])
-			bIndex++
+			for i := step.Count - 1; i >= 0; i-- {
+				result = append(result, b[bIndex])
+				bIndex++
+			}
 
 		case RemovedStep:
 			switch prevState {
@@ -85,10 +95,12 @@ func Merge(a, b []string) []string {
 			case AddedStep:
 				result = append(result, middleChange)
 			}
-			result = append(result, a[aIndex])
-			aIndex++
+			for i := step.Count - 1; i >= 0; i-- {
+				result = append(result, a[aIndex])
+				aIndex++
+			}
 		}
-		prevState = step
+		prevState = step.Step
 	}
 
 	switch prevState {

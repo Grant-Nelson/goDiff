@@ -1,42 +1,22 @@
 package diff
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"testing"
 )
 
-// printCostMatrix gets the cost matrix string.
-func (cm *costMatrix) String() string {
-	buf := &bytes.Buffer{}
-	buf.WriteString("[[")
-	for i, costRow := range cm.costs {
-		if i > 0 {
-			buf.WriteString("],\n [")
-		}
-		for j, cost := range costRow {
-			if j > 0 {
-				buf.WriteString(", ")
-			}
-			buf.WriteString(fmt.Sprint(cost))
-		}
-	}
-	buf.WriteString("]]\n")
-	return buf.String()
-}
-
 func TestLevenshteinDistance(t *testing.T) {
-	checkLP(t, "A", "A", "0")
-	checkLP(t, "A", "B", "21")
-	checkLP(t, "A", "AB", "01")
-	checkLP(t, "A", "BA", "10")
-	checkLP(t, "AB", "A", "02")
-	checkLP(t, "BA", "A", "20")
-	checkLP(t, "kitten", "sitting", "210002101")
-	checkLP(t, "saturday", "sunday", "022021000")
-	checkLP(t, "satxrday", "sunday", "0222211000")
-	checkLP(t, "ABC", "ADB", "0102")
+	checkLP(t, "A", "A", "0x1")
+	checkLP(t, "A", "B", "2x1, 1x1")
+	checkLP(t, "A", "AB", "0x1, 1x1")
+	checkLP(t, "A", "BA", "1x1, 0x1")
+	checkLP(t, "AB", "A", "0x1, 2x1")
+	checkLP(t, "BA", "A", "2x1, 0x1")
+	checkLP(t, "kitten", "sitting", "2x1, 1x1, 0x3, 2x1, 1x1, 0x1, 1x1")
+	checkLP(t, "saturday", "sunday", "0x1, 2x2, 0x1, 2x1, 1x1, 0x3")
+	checkLP(t, "satxrday", "sunday", "0x1, 2x4, 1x2, 0x3")
+	checkLP(t, "ABC", "ADB", "0x1, 1x1, 0x1, 2x1")
 }
 
 func TestPartDiff(t *testing.T) {
@@ -230,10 +210,11 @@ func checkLP(t *testing.T, a, b, exp string) {
 	}
 
 	path := Path(&stringSliceComparable{a: aParts, b: bParts})
-	result := ""
+	parts := []string{}
 	for _, step := range path {
-		result += fmt.Sprint(step)
+		parts = append(parts, fmt.Sprint(step.Step, `x`, step.Count))
 	}
+	result := strings.Join(parts, `, `)
 
 	if exp != result {
 		t.Error("Levenshtein Distance returned unexpected result:",

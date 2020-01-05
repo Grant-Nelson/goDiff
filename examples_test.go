@@ -77,7 +77,3 @@ func ExampleMerge() {
 	// Tea
 	// >>>>>>>>
 }
-
-func ExamplePath() {
-
-}
