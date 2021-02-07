@@ -1,5 +1,24 @@
 package diff
 
+// StringSlicePath gets the difference path for the two given string slices.
+func StringSlicePath(a, b []string) []Step {
+	return Path(newStrSliceComp(a, b))
+}
+
+// RuneSlicesPath gets the difference path for the two given runes slices.
+func RuneSlicesPath(a, b [][]rune) []Step {
+	return Path(newRuneSliceComp(a, b))
+}
+
+// Path gets the difference path for the given comparable.
+func Path(comp Comparable) []Step {
+	path := []Step{}
+	WalkPath(comp, func(step Step) {
+		path = append(path, step)
+	})
+	return path
+}
+
 // PlusMinus gets the labelled difference between the two slices.
 // It formats the results by prepending a "+" to new strings in [b],
 // a "-" for any to removed strings from [a], and " " if the strings are the same.

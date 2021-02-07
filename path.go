@@ -1,21 +1,33 @@
 package diff
 
-// PathCallback is the function signature for calling back steps in the path.
-type PathCallback func(step Step)
+type (
+	// StepType is the steps of the levenshtein path.
+	StepType int
 
-// StringSlicePath gets the difference path for the two given string slices.
-func StringSlicePath(a, b []string) []Step {
-	return Path(newStrSliceComp(a, b))
-}
+	// Step is a continuous group of step types.
+	Step struct {
 
-// Path gets the difference path for the given comparable.
-func Path(comp Comparable) []Step {
-	path := []Step{}
-	WalkPath(comp, func(step Step) {
-		path = append(path, step)
-	})
-	return path
-}
+		// step is the type for this group.
+		Type StepType
+
+		// count is the number of the given type in the group.
+		Count int
+	}
+
+	// PathCallback is the function signature for calling back steps in the path.
+	PathCallback func(step Step)
+)
+
+const (
+	// Equal indicates A and B entries are equal.
+	Equal StepType = iota
+
+	// Added indicates A was added.
+	Added
+
+	// Removed indicates A was removed.
+	Removed
+)
 
 // WalkPath calls back the difference path for the given comparable.
 func WalkPath(comp Comparable, hndl PathCallback) {
@@ -49,10 +61,12 @@ func WalkPath(comp Comparable, hndl PathCallback) {
 			insertEqual()
 			addRun += step.Count
 			break
+
 		case Removed:
 			insertEqual()
 			removeRun += step.Count
 			break
+
 		case Equal:
 			insertRemove()
 			insertAdd()
@@ -68,8 +82,6 @@ func WalkPath(comp Comparable, hndl PathCallback) {
 }
 
 // pathBuilder is a Levenshtein/Hirschberg path builder used for diffing two comparable sources.
-// See https://en.wikipedia.org/wiki/Levenshtein_distance
-// And https://en.wikipedia.org/wiki/Hirschberg%27s_algorithm
 type pathBuilder struct {
 
 	// baseCont is the source comparable to create the path for.
