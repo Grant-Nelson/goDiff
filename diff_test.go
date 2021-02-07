@@ -209,10 +209,10 @@ func checkLP(t *testing.T, a, b, exp string) {
 		bParts = append(bParts, string([]rune{part}))
 	}
 
-	path := Path(&stringSliceComparable{a: aParts, b: bParts})
+	path := Path(newStrSliceComp(aParts, bParts))
 	parts := []string{}
 	for _, step := range path {
-		parts = append(parts, fmt.Sprint(step.Step, `x`, step.Count))
+		parts = append(parts, fmt.Sprint(step.Type, `x`, step.Count))
 	}
 	result := strings.Join(parts, `, `)
 
