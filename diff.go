@@ -37,5 +37,6 @@ func Diff(comp comparable.Comparable) Results {
 	h := hirschberg.New(nil)
 	cont := container.New(comp)
 	h.Diff(cont, col)
+	col.Finish()
 	return col
 }

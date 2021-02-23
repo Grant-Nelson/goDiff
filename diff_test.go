@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"./comparable"
+	"./step"
 )
 
 func TestLevenshteinDistance(t *testing.T) {
@@ -210,8 +211,8 @@ func checkLP(t *testing.T, a, b, exp string) {
 
 	path := Diff(comparable.NewString(aParts, bParts))
 	parts := make([]string, 0, path.Count())
-	path.Read(func(step StepType, count int) {
-		parts = append(parts, fmt.Sprint(step, `x`, count))
+	path.Read(func(stepType step.Type, count int) {
+		parts = append(parts, fmt.Sprint(stepType, `x`, count))
 	})
 	result := strings.Join(parts, `, `)
 

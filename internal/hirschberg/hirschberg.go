@@ -52,7 +52,7 @@ func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
 			return
 		}
 
-		if h.hybrid.CanDiff(cur) {
+		if (h.hybrid != nil) && h.hybrid.CanDiff(cur) {
 			h.hybrid.Diff(cur, col)
 			return
 		}

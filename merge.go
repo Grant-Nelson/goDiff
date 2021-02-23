@@ -20,8 +20,8 @@ func Merge(a, b []string) []string {
 	aIndex, bIndex := 0, 0
 
 	prevState := step.Equal
-	path.Read(func(step step.Type, count int) {
-		switch step {
+	path.Read(func(stepType step.Type, count int) {
+		switch stepType {
 		case step.Equal:
 			switch prevState {
 			case step.Added:
@@ -61,7 +61,7 @@ func Merge(a, b []string) []string {
 				aIndex++
 			}
 		}
-		prevState = step
+		prevState = stepType
 	})
 
 	switch prevState {

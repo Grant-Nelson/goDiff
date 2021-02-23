@@ -13,8 +13,8 @@ func PlusMinus(a, b []string) []string {
 
 	result := make([]string, 0, path.Total())
 	aIndex, bIndex := 0, 0
-	path.Read(func(step step.Type, count int) {
-		switch step {
+	path.Read(func(stepType step.Type, count int) {
+		switch stepType {
 		case step.Equal:
 			for i := count - 1; i >= 0; i-- {
 				result = append(result, " "+a[aIndex])
