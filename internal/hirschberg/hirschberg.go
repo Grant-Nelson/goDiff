@@ -44,17 +44,17 @@ func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
 
 		if bLen <= 1 {
 			bEdge(cur, col)
-			return
+			continue
 		}
 
 		if aLen <= 1 {
 			aEdge(cur, col)
-			return
+			continue
 		}
 
 		if (h.hybrid != nil) && h.hybrid.CanDiff(cur) {
 			h.hybrid.Diff(cur, col)
-			return
+			continue
 		}
 
 		if h.scores == nil {
@@ -62,8 +62,8 @@ func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
 		}
 		aMid, bMid := h.scores.Split(cur)
 
-		stack.Push(cur.Sub(aMid, aLen, bMid, bLen, false))
 		stack.Push(cur.Sub(0, aMid, 0, bMid, false))
+		stack.Push(cur.Sub(aMid, aLen, bMid, bLen, false))
 	}
 }
 
