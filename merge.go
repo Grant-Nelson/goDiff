@@ -1,6 +1,9 @@
 package diff
 
-import "../../comparable"
+import (
+	"./comparable"
+	"./step"
+)
 
 // Merge gets the labelled difference between the two slices
 // using a similar output to the git merge differences output.
@@ -16,14 +19,14 @@ func Merge(a, b []string) []string {
 	result := make([]string, 0, path.Total()+path.Count()*2)
 	aIndex, bIndex := 0, 0
 
-	prevState := Equal
-	path.Read(func(step StepType, count int) {
+	prevState := step.Equal
+	path.Read(func(step step.Type, count int) {
 		switch step {
-		case Equal:
+		case step.Equal:
 			switch prevState {
-			case Added:
+			case step.Added:
 				result = append(result, endChange)
-			case Removed:
+			case step.Removed:
 				result = append(result, middleChange)
 				result = append(result, endChange)
 			}
@@ -33,12 +36,12 @@ func Merge(a, b []string) []string {
 				bIndex++
 			}
 
-		case Added:
+		case step.Added:
 			switch prevState {
-			case Equal:
+			case step.Equal:
 				result = append(result, startChange)
 				result = append(result, middleChange)
-			case Removed:
+			case step.Removed:
 				result = append(result, middleChange)
 			}
 			for i := count - 1; i >= 0; i-- {
@@ -46,11 +49,11 @@ func Merge(a, b []string) []string {
 				bIndex++
 			}
 
-		case Removed:
+		case step.Removed:
 			switch prevState {
-			case Equal:
+			case step.Equal:
 				result = append(result, startChange)
-			case Added:
+			case step.Added:
 				result = append(result, middleChange)
 			}
 			for i := count - 1; i >= 0; i-- {
@@ -62,9 +65,9 @@ func Merge(a, b []string) []string {
 	})
 
 	switch prevState {
-	case Added:
+	case step.Added:
 		result = append(result, endChange)
-	case Removed:
+	case step.Removed:
 		result = append(result, middleChange)
 		result = append(result, endChange)
 	}

@@ -1,17 +1,13 @@
 package collector
 
+import "../../step"
+
 type (
-	// StepType is the steps of the levenshtein path.
-	StepType int
-
-	// PathCallback is the function signature for calling back steps in the path.
-	PathCallback func(step StepType, count int)
-
 	// stepNode is a continuous group of step types stored in the collector.
 	stepNode struct {
 
 		// Step is the type for this group.
-		Step StepType
+		Step step.Type
 
 		// Count is the number of the given type in the group.
 		Count int
@@ -46,17 +42,6 @@ type (
 	}
 )
 
-const (
-	// Equal indicates A and B entries are equal.
-	Equal StepType = iota
-
-	// Added indicates A was added.
-	Added
-
-	// Removed indicates A was removed.
-	Removed
-)
-
 // New creates a new collector.
 func New() *Collector {
 	return &Collector{
@@ -70,7 +55,7 @@ func New() *Collector {
 }
 
 // push pushes a new step into the collection.
-func (c *Collector) push(step StepType, count int) {
+func (c *Collector) push(step step.Type, count int) {
 	c.head = &stepNode{
 		Step:  step,
 		Count: count,
@@ -83,7 +68,7 @@ func (c *Collector) push(step StepType, count int) {
 // pushAdd pushes an Added step if there is any Added parts currently collected.
 func (c *Collector) pushAdded() {
 	if c.addedRun > 0 {
-		c.push(Added, c.addedRun)
+		c.push(step.Added, c.addedRun)
 		c.addedRun = 0
 	}
 }
@@ -91,7 +76,7 @@ func (c *Collector) pushAdded() {
 // pushRemove pushes an Removed step if there is any Removed parts currently collected.
 func (c *Collector) pushRemoved() {
 	if c.removedRun > 0 {
-		c.push(Removed, c.removedRun)
+		c.push(step.Removed, c.removedRun)
 		c.removedRun = 0
 	}
 }
@@ -99,7 +84,7 @@ func (c *Collector) pushRemoved() {
 // pushEqual pushes an Add step if there is any Add parts currently collected.
 func (c *Collector) pushEqual() {
 	if c.equalRun > 0 {
-		c.push(Equal, c.equalRun)
+		c.push(step.Equal, c.equalRun)
 		c.equalRun = 0
 	}
 }
@@ -154,7 +139,7 @@ func (c *Collector) Total() int {
 
 // Read will read the collected steps in the expected result order,
 // reversed from the order that it was inserted.
-func (c *Collector) Read(hndl PathCallback) {
+func (c *Collector) Read(hndl step.PathCallback) {
 	node := c.head
 	for node != nil {
 		hndl(node.Step, node.Count)
