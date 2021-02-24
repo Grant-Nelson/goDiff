@@ -1,11 +1,16 @@
-package container
+package hirschberg
+
+import "../container"
 
 type (
 	// stackNode is a node in a stack of containers.
 	stackNode struct {
 
 		// cont is the container for this node.
-		cont *Container
+		cont *container.Container
+
+		// remainder is any equals left over from the reduction.
+		remainder int
 
 		// prev is the node previous to this node in the stack.
 		prev *stackNode
@@ -32,19 +37,20 @@ func (s *Stack) NotEmpty() bool {
 }
 
 // Push a new container onto this stack.
-func (s *Stack) Push(cont *Container) {
+func (s *Stack) Push(cont *container.Container, remainder int) {
 	s.top = &stackNode{
-		cont: cont,
-		prev: s.top,
+		cont:      cont,
+		remainder: remainder,
+		prev:      s.top,
 	}
 }
 
 // Pop a container off the stack, will be nil if empty.
-func (s *Stack) Pop() *Container {
+func (s *Stack) Pop() (*container.Container, int) {
 	node := s.top
 	if node != nil {
 		s.top = node.prev
-		return node.cont
+		return node.cont, node.remainder
 	}
-	return nil
+	return nil, 0
 }

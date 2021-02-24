@@ -35,25 +35,32 @@ func (h *hirschberg) CanDiff(cont *container.Container) bool {
 // Diff performs the algorithm on the given container
 // and writes the results to the collector.
 func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
-	stack := container.NewStack()
-	stack.Push(cont)
+	stack := NewStack()
+	stack.Push(cont, 0)
 	for stack.NotEmpty() {
-		cur := stack.Pop()
-		aLen := cur.ALength()
-		bLen := cur.BLength()
+		cur, remainder := stack.Pop()
+		col.InsertEqual(remainder)
 
+		cur, before, after := cur.Reduce()
+		col.InsertEqual(after)
+
+		bLen := cur.BLength()
 		if bLen <= 1 {
 			bEdge(cur, col)
+			col.InsertEqual(before)
 			continue
 		}
 
+		aLen := cur.ALength()
 		if aLen <= 1 {
 			aEdge(cur, col)
+			col.InsertEqual(before)
 			continue
 		}
 
 		if (h.hybrid != nil) && h.hybrid.CanDiff(cur) {
 			h.hybrid.Diff(cur, col)
+			col.InsertEqual(before)
 			continue
 		}
 
@@ -62,8 +69,8 @@ func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
 		}
 		aMid, bMid := h.scores.Split(cur)
 
-		stack.Push(cur.Sub(0, aMid, 0, bMid, false))
-		stack.Push(cur.Sub(aMid, aLen, bMid, bLen, false))
+		stack.Push(cur.Sub(0, aMid, 0, bMid, false), 0)
+		stack.Push(cur.Sub(aMid, aLen, bMid, bLen, false), before)
 	}
 }
 

@@ -32,6 +32,14 @@ type (
 	}
 )
 
+// min gets the minimum value from the two given values.
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 // check that the container also implements the comparable.
 var _ comparable.Comparable = (*Container)(nil)
 
@@ -71,20 +79,6 @@ func (cont *Container) bAdjust(bIndex int) int {
 	return bIndex + cont.bOffset
 }
 
-// Sub creates a new comparable container for a subset and reverse relative to this container's settings.
-func (cont *Container) Sub(aLow, aHigh, bLow, bHigh int, reverse bool) *Container {
-	if cont.reverse {
-		return newSub(cont.comp,
-			cont.aAdjust(aHigh), aHigh-aLow,
-			cont.bAdjust(bHigh), bHigh-bLow,
-			!reverse)
-	}
-	return newSub(cont.comp,
-		cont.aAdjust(aLow), aHigh-aLow,
-		cont.bAdjust(bLow), bHigh-bLow,
-		reverse)
-}
-
 // ALength is the length of the first list being compared.
 func (cont *Container) ALength() int {
 	return cont.aLength
@@ -106,4 +100,42 @@ func (cont *Container) SubstitionCost(i, j int) int {
 		return step.EqualCost
 	}
 	return step.SubstitionCost
+}
+
+// Sub creates a new comparable container for a subset and reverse relative to this container's settings.
+func (cont *Container) Sub(aLow, aHigh, bLow, bHigh int, reverse bool) *Container {
+	if cont.reverse {
+		return newSub(cont.comp,
+			cont.aAdjust(aHigh), aHigh-aLow,
+			cont.bAdjust(bHigh), bHigh-bLow,
+			!reverse)
+	}
+	return newSub(cont.comp,
+		cont.aAdjust(aLow), aHigh-aLow,
+		cont.bAdjust(bLow), bHigh-bLow,
+		reverse)
+}
+
+// Reduce determines how much of the edges of this container are equal.
+// The amount before and after which are equal are returned and
+// the reduced subcontainer is returned.
+func (cont *Container) Reduce() (sub *Container, before, after int) {
+	width := min(cont.aLength, cont.bLength)
+	for before := 0; before < width; before++ {
+		if !cont.Equals(before, before) {
+			break
+		}
+	}
+
+	width = width - before
+	for after := 0; after < width; after++ {
+		if !cont.Equals(cont.aLength-1-after, cont.bLength-1-after) {
+			break
+		}
+	}
+
+	return cont.Sub(
+		before, cont.aLength-1-after,
+		before, cont.bLength-1-after,
+		cont.reverse), before, after
 }
