@@ -30,3 +30,13 @@ func (comp *String) BLength() int {
 func (comp *String) Equals(aIndex, bIndex int) bool {
 	return comp.a[aIndex] == comp.b[bIndex]
 }
+
+// AValue gets the value from the A source at the given index.
+func (comp *String) AValue(aIndex int) string {
+	return comp.a[aIndex]
+}
+
+// BValue gets the value from the B source at the given index.
+func (comp *String) BValue(bIndex int) string {
+	return comp.b[bIndex]
+}

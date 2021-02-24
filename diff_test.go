@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"./comparable"
-	"./step"
+	"github.com/Grant-Nelson/goDiff/comparable"
+	"github.com/Grant-Nelson/goDiff/step"
 )
 
 func TestLevenshteinDistance(t *testing.T) {

@@ -1,6 +1,6 @@
 package collector
 
-import "../../step"
+import "github.com/Grant-Nelson/goDiff/step"
 
 type (
 	// stepNode is a continuous group of step types stored in the collector.

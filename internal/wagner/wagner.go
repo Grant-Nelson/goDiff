@@ -1,8 +1,8 @@
 package wagner
 
 import (
-	"../../collector"
-	"../comparable"
+	"github.com/Grant-Nelson/goDiff/internal/collector"
+	"github.com/Grant-Nelson/goDiff/internal/comparable"
 )
 
 // Wagner–Fischer algorithm

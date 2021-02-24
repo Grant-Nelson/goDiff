@@ -1,6 +1,6 @@
 package hirschberg
 
-import "../container"
+import "github.com/Grant-Nelson/goDiff/internal/container"
 
 type (
 	// stackNode is a node in a stack of containers.

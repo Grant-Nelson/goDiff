@@ -1,8 +1,8 @@
 package hirschberg
 
 import (
-	"../collector"
-	"../container"
+	"github.com/Grant-Nelson/goDiff/internal/collector"
+	"github.com/Grant-Nelson/goDiff/internal/container"
 )
 
 // hirschberg will perform a hybrid Hirschberg/Wagner diff on the given comparable.

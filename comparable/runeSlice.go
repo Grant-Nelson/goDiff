@@ -38,3 +38,13 @@ func (comp *RuneSlice) Equals(aIndex, bIndex int) bool {
 	}
 	return true
 }
+
+// AValue gets the value from the A source at the given index.
+func (comp *RuneSlice) AValue(aIndex int) []rune {
+	return comp.a[aIndex]
+}
+
+// BValue gets the value from the B source at the given index.
+func (comp *RuneSlice) BValue(bIndex int) []rune {
+	return comp.b[bIndex]
+}

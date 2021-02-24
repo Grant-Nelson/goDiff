@@ -1,11 +1,11 @@
 package godiff
 
 import (
-	"./comparable"
-	"./internal/collector"
-	"./internal/container"
-	"./internal/hirschberg"
-	"./step"
+	"github.com/Grant-Nelson/goDiff/comparable"
+	"github.com/Grant-Nelson/goDiff/internal/collector"
+	"github.com/Grant-Nelson/goDiff/internal/container"
+	"github.com/Grant-Nelson/goDiff/internal/hirschberg"
+	"github.com/Grant-Nelson/goDiff/step"
 )
 
 // Results are the result from a diff.

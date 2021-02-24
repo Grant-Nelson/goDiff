@@ -1,9 +1,22 @@
 package container
 
 import (
-	"../../comparable"
-	"../../step"
-	"../collector"
+	"github.com/Grant-Nelson/goDiff/comparable"
+	"github.com/Grant-Nelson/goDiff/internal/collector"
+)
+
+const (
+	// RemoveCost gives the cost to remove A at the given index.
+	RemoveCost = 1
+
+	// AddCost gives the cost to add B at the given index.
+	AddCost = 1
+
+	// SubstitionCost gives the substition cost for replacing A with B at the given indices.
+	SubstitionCost = 2
+
+	// EqualCost gives the cost for A and B being equal.
+	EqualCost = 0
 )
 
 type (
@@ -97,9 +110,9 @@ func (cont *Container) Equals(aIndex, bIndex int) bool {
 // SubstitionCost determines the substition cost for the given indices.
 func (cont *Container) SubstitionCost(i, j int) int {
 	if cont.Equals(i, j) {
-		return step.EqualCost
+		return EqualCost
 	}
-	return step.SubstitionCost
+	return SubstitionCost
 }
 
 // Sub creates a new comparable container for a subset and reverse relative to this container's settings.
@@ -121,21 +134,21 @@ func (cont *Container) Sub(aLow, aHigh, bLow, bHigh int, reverse bool) *Containe
 // the reduced subcontainer is returned.
 func (cont *Container) Reduce() (sub *Container, before, after int) {
 	width := min(cont.aLength, cont.bLength)
-	for before := 0; before < width; before++ {
+	for before = 0; before < width; before++ {
 		if !cont.Equals(before, before) {
 			break
 		}
 	}
 
 	width = width - before
-	for after := 0; after < width; after++ {
+	for after = 0; after < width; after++ {
 		if !cont.Equals(cont.aLength-1-after, cont.bLength-1-after) {
 			break
 		}
 	}
 
 	return cont.Sub(
-		before, cont.aLength-1-after,
-		before, cont.bLength-1-after,
+		before, cont.aLength-after,
+		before, cont.bLength-after,
 		cont.reverse), before, after
 }

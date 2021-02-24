@@ -1,8 +1,7 @@
 package hirschberg
 
 import (
-	"../../step"
-	"../container"
+	"github.com/Grant-Nelson/goDiff/internal/container"
 )
 
 // scores is the Hirschberg scores used for diffing two comparable sources.
@@ -58,16 +57,16 @@ func (s *scores) calculate(cont *container.Container) {
 
 	s.back[0] = 0
 	for j := 1; j <= bLen; j++ {
-		s.back[j] = s.back[j-1] + step.AddCost
+		s.back[j] = s.back[j-1] + container.AddCost
 	}
 
 	for i := 1; i <= aLen; i++ {
-		s.front[0] = s.back[0] + step.RemoveCost
+		s.front[0] = s.back[0] + container.RemoveCost
 		for j := 1; j <= bLen; j++ {
 			s.front[j] = min(
 				s.back[j-1]+cont.SubstitionCost(i-1, j-1),
-				s.back[j]+step.RemoveCost,
-				s.front[j-1]+step.AddCost)
+				s.back[j]+container.RemoveCost,
+				s.front[j-1]+container.AddCost)
 		}
 
 		s.swap()

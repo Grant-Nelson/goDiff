@@ -1,8 +1,8 @@
 package godiff
 
 import (
-	"./comparable"
-	"./step"
+	"github.com/Grant-Nelson/goDiff/comparable"
+	"github.com/Grant-Nelson/goDiff/step"
 )
 
 // PlusMinus gets the labelled difference between the two slices.
