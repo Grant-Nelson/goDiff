@@ -209,6 +209,7 @@ func checkLP(t *testing.T, a, b, exp string) {
 		bParts = append(bParts, string([]rune{part}))
 	}
 
+	fmt.Println("=======================")
 	path := Diff(comparable.NewString(aParts, bParts))
 	parts := make([]string, 0, path.Count())
 	path.Read(func(stepType step.Type, count int) {
@@ -217,6 +218,11 @@ func checkLP(t *testing.T, a, b, exp string) {
 	result := strings.Join(parts, `, `)
 
 	if exp != result {
+		fmt.Print("Levenshtein Distance returned unexpected result:",
+			"\n   Input A:  ", a,
+			"\n   Input B:  ", b,
+			"\n   Expected: ", exp,
+			"\n   Result:   ", result, "\n")
 		t.Error("Levenshtein Distance returned unexpected result:",
 			"\n   Input A:  ", a,
 			"\n   Input B:  ", b,
@@ -229,9 +235,15 @@ func checkLP(t *testing.T, a, b, exp string) {
 func checkDiff(t *testing.T, sep, a, b, exp string) {
 	aParts := strings.Split(a, sep)
 	bParts := strings.Split(b, sep)
+	fmt.Println("=======================")
 	resultParts := PlusMinus(aParts, bParts)
 	result := strings.Join(resultParts, sep)
 	if exp != result {
+		fmt.Print("PartDiff returned unexpected result:",
+			"\n   Input A:  ", a,
+			"\n   Input B:  ", b,
+			"\n   Expected: ", exp,
+			"\n   Result:   ", result, "\n")
 		t.Error("PartDiff returned unexpected result:",
 			"\n   Input A:  ", a,
 			"\n   Input B:  ", b,

@@ -21,13 +21,18 @@ type (
 
 		// top is the top of the stack.
 		top *stackNode
+
+		// graveyard is used to keep from allocating new nodes
+		// when some have been already allocated and discarded.
+		graveyard *stackNode
 	}
 )
 
 // NewStack creates a new stack of containers.
 func NewStack() *Stack {
 	return &Stack{
-		top: nil,
+		top:       nil,
+		graveyard: nil,
 	}
 }
 
@@ -38,10 +43,21 @@ func (s *Stack) NotEmpty() bool {
 
 // Push a new container onto this stack.
 func (s *Stack) Push(cont *container.Container, remainder int) {
-	s.top = &stackNode{
-		cont:      cont,
-		remainder: remainder,
-		prev:      s.top,
+	if (cont != nil) || (remainder > 0) {
+		if s.graveyard != nil {
+			node := s.graveyard
+			s.graveyard = node.prev
+			node.cont = cont
+			node.remainder = remainder
+			node.prev = s.top
+			s.top = node
+		} else {
+			s.top = &stackNode{
+				cont:      cont,
+				remainder: remainder,
+				prev:      s.top,
+			}
+		}
 	}
 }
 
@@ -50,7 +66,13 @@ func (s *Stack) Pop() (*container.Container, int) {
 	node := s.top
 	if node != nil {
 		s.top = node.prev
-		return node.cont, node.remainder
+		node.prev = s.graveyard
+		s.graveyard = node
+		cont := node.cont
+		remainder := node.remainder
+		node.cont = nil
+		node.remainder = 0
+		return cont, remainder
 	}
 	return nil, 0
 }

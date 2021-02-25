@@ -29,11 +29,12 @@ func (comp *RuneSlice) BLength() int {
 // Equals determines if the entries in the two given indices are equal.
 func (comp *RuneSlice) Equals(aIndex, bIndex int) bool {
 	a, b := comp.a[aIndex], comp.b[bIndex]
-	if len(a) == len(b) {
-		for i, v := range a {
-			if b[i] != v {
-				return false
-			}
+	if len(a) != len(b) {
+		return false
+	}
+	for i, v := range a {
+		if b[i] != v {
+			return false
 		}
 	}
 	return true
