@@ -18,3 +18,17 @@ const (
 	// Removed indicates A was removed.
 	Removed
 )
+
+// String gets the string for step type.
+func (t Type) String() string {
+	switch t {
+	case Equal:
+		return `=`
+	case Added:
+		return `+`
+	case Removed:
+		return `-`
+	default:
+		return `?`
+	}
+}

@@ -20,11 +20,18 @@ type scores struct {
 // newScores creates a new path builder. The given length must be one greater
 // than the maximum B length that will be passed into these scores.
 func newScores(length int) *scores {
-	return &scores{
-		front: make([]int, length),
-		back:  make([]int, length),
-		other: make([]int, length),
+	s := &scores{}
+	if length > 0 {
+		s.allocateVectors(length)
 	}
+	return s
+}
+
+// allocateVectors will create the slices used for the score vectors.
+func (s *scores) allocateVectors(length int) {
+	s.front = make([]int, length)
+	s.back = make([]int, length)
+	s.other = make([]int, length)
 }
 
 // swap swaps the front and back score vectors.
@@ -54,6 +61,9 @@ func min(a, b, c int) int {
 func (s *scores) calculate(cont *container.Container) {
 	aLen := cont.ALength()
 	bLen := cont.BLength()
+	if len(s.back) < bLen+1 {
+		s.allocateVectors(bLen + 1)
+	}
 
 	s.back[0] = 0
 	for j := 1; j <= bLen; j++ {

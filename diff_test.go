@@ -10,16 +10,16 @@ import (
 )
 
 func TestLevenshteinDistance(t *testing.T) {
-	checkLP(t, "A", "A", "0x1")
-	checkLP(t, "A", "B", "2x1, 1x1")
-	checkLP(t, "A", "AB", "0x1, 1x1")
-	checkLP(t, "A", "BA", "1x1, 0x1")
-	checkLP(t, "AB", "A", "0x1, 2x1")
-	checkLP(t, "BA", "A", "2x1, 0x1")
-	checkLP(t, "kitten", "sitting", "2x1, 1x1, 0x3, 2x1, 1x1, 0x1, 1x1")
-	checkLP(t, "saturday", "sunday", "0x1, 2x2, 0x1, 2x1, 1x1, 0x3")
-	checkLP(t, "satxrday", "sunday", "0x1, 2x4, 1x2, 0x3")
-	checkLP(t, "ABC", "ADB", "0x1, 1x1, 0x1, 2x1")
+	checkLP(t, "A", "A", "=1")
+	checkLP(t, "A", "B", "-1, +1")
+	checkLP(t, "A", "AB", "=1, +1")
+	checkLP(t, "A", "BA", "+1, =1")
+	checkLP(t, "AB", "A", "=1, -1")
+	checkLP(t, "BA", "A", "-1, =1")
+	checkLP(t, "kitten", "sitting", "-1, +1, =3, -1, +1, =1, +1")
+	checkLP(t, "saturday", "sunday", "=1, -2, =1, -1, +1, =3")
+	checkLP(t, "satxrday", "sunday", "=1, -4, +2, =3")
+	checkLP(t, "ABC", "ADB", "=1, +1, =1, -1")
 }
 
 func TestPartDiff(t *testing.T) {
@@ -209,20 +209,13 @@ func checkLP(t *testing.T, a, b, exp string) {
 		bParts = append(bParts, string([]rune{part}))
 	}
 
-	fmt.Println("=======================")
 	path := Diff(comparable.NewString(aParts, bParts))
 	parts := make([]string, 0, path.Count())
 	path.Read(func(stepType step.Type, count int) {
-		parts = append(parts, fmt.Sprint(stepType, `x`, count))
+		parts = append(parts, fmt.Sprintf("%s%d", stepType.String(), count))
 	})
 	result := strings.Join(parts, `, `)
-
 	if exp != result {
-		fmt.Print("Levenshtein Distance returned unexpected result:",
-			"\n   Input A:  ", a,
-			"\n   Input B:  ", b,
-			"\n   Expected: ", exp,
-			"\n   Result:   ", result, "\n")
 		t.Error("Levenshtein Distance returned unexpected result:",
 			"\n   Input A:  ", a,
 			"\n   Input B:  ", b,
@@ -235,15 +228,9 @@ func checkLP(t *testing.T, a, b, exp string) {
 func checkDiff(t *testing.T, sep, a, b, exp string) {
 	aParts := strings.Split(a, sep)
 	bParts := strings.Split(b, sep)
-	fmt.Println("=======================")
 	resultParts := PlusMinus(aParts, bParts)
 	result := strings.Join(resultParts, sep)
 	if exp != result {
-		fmt.Print("PartDiff returned unexpected result:",
-			"\n   Input A:  ", a,
-			"\n   Input B:  ", b,
-			"\n   Expected: ", exp,
-			"\n   Result:   ", result, "\n")
 		t.Error("PartDiff returned unexpected result:",
 			"\n   Input A:  ", a,
 			"\n   Input B:  ", b,

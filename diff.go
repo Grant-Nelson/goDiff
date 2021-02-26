@@ -34,7 +34,7 @@ var _ Results = (*collector.Collector)(nil)
 // Diff will perform a diff on the given comparable information.
 func Diff(comp comparable.Comparable) Results {
 	col := collector.New()
-	h := hirschberg.New(nil)
+	h := hirschberg.New(nil, -1)
 	cont := container.New(comp)
 	h.Diff(cont, col)
 	col.Finish()

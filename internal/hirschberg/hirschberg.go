@@ -9,27 +9,34 @@ import (
 // The base algorithm is a Hirschberg's algorithm (https://en.wikipedia.org/wiki/Hirschberg%27s_algorithm)
 // used to divide the problem space until the threshold is reached to switch to Wagner.
 type hirschberg struct {
-	scores *scores
-	hybrid container.Diff
+	scores    *scores
+	hybrid    container.Diff
+	useReduce bool
 }
 
 // New creates a new Hirschberg diff algorithm.
 //
 // This allows for an optional diff to use when possible to hybrid the algorithm, to not use
-// the optional diff pass in nil. The hybrid is used when it indicates that it can be used.
-func New(hybrid container.Diff) container.Diff {
+// the optional diff pass in nil. The hybrid is used if it has enough memory preallocated,
+// WillResize returns true, otherwise Hirschberg will continue to divide the space until
+// the hybrid can be used without causing it to reallocate memory.
+//
+// The given length is the initial score vector size. If the vector is too small it will be
+// reallocated to the larger size. Use -1 to not preallocate the vectors.
+func New(hybrid container.Diff, length int) container.Diff {
 	return &hirschberg{
-		scores: nil,
-		hybrid: hybrid,
+		scores:    newScores(length),
+		hybrid:    hybrid,
+		useReduce: true,
 	}
 }
 
-// CanDiff determines if the diff algorithm can handle a container with
+// WillResize determines if the diff algorithm can handle a container with
 // the amount of data inside of the given container.
-// This algorithm will be autosize when first used so will return true for any size
-// until it has been used once, then will only return true if container is small enough.
-func (h *hirschberg) CanDiff(cont *container.Container) bool {
-	return (h.scores == nil) || (len(h.scores.back) >= cont.BLength()+1)
+// This algorithm's score vectors will be auto-resize if needed so this method
+// only indicates if the current vectors are large enough to not need reallocation.
+func (h *hirschberg) WillResize(cont *container.Container) bool {
+	return len(h.scores.back) >= cont.BLength()+1
 }
 
 // Diff performs the algorithm on the given container
@@ -45,9 +52,12 @@ func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
 			continue
 		}
 
-		cur, before, after := cur.Reduce()
-		col.InsertEqual(after)
-		stack.Push(nil, before)
+		if h.useReduce {
+			var before, after int
+			cur, before, after = cur.Reduce()
+			col.InsertEqual(after)
+			stack.Push(nil, before)
+		}
 
 		bLen := cur.BLength()
 		if bLen <= 1 {
@@ -61,16 +71,12 @@ func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
 			continue
 		}
 
-		if (h.hybrid != nil) && h.hybrid.CanDiff(cur) {
+		if (h.hybrid != nil) && h.hybrid.WillResize(cur) {
 			h.hybrid.Diff(cur, col)
 			continue
 		}
 
-		if h.scores == nil {
-			h.scores = newScores(bLen + 1)
-		}
 		aMid, bMid := h.scores.Split(cur)
-
 		stack.Push(cur.Sub(0, aMid, 0, bMid, false), 0)
 		stack.Push(cur.Sub(aMid, aLen, bMid, bLen, false), 0)
 	}
