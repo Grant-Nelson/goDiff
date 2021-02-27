@@ -46,6 +46,6 @@ func (w *walker) moveSubstitute() {
 }
 
 func (w *walker) finish() {
-	w.col.InsertRemoved(w.i)
-	w.col.InsertAdded(w.j)
+	w.col.InsertRemoved(w.i + 1)
+	w.col.InsertAdded(w.j + 1)
 }

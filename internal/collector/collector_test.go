@@ -97,6 +97,7 @@ func Test_Error(t *testing.T) {
 	col.InsertEqual(3)
 	col.InsertRemoved(2)
 	col.InsertAdded(2)
+	col.InsertSubstitute(3)
 
 	panicEqual(t, func() { col.Count() }, errFinishBeforeCount, `Collection.Count`)
 	panicEqual(t, func() { col.Total() }, errFinishBeforeTotal, `Collection.Total`)
@@ -105,11 +106,12 @@ func Test_Error(t *testing.T) {
 	col.Finish()
 
 	intEqual(t, col.Count(), 5, `Collection.Count`)
-	intEqual(t, col.Total(), 9, `Collection.Total`)
-	readEqual(t, col, `-2 +2 =3 -1 +1`)
+	intEqual(t, col.Total(), 15, `Collection.Total`)
+	readEqual(t, col, `-5 +5 =3 -1 +1`)
 
 	panicEqual(t, func() { col.Finish() }, errFinishAfterFinish, `Collection.Finish`)
 	panicEqual(t, func() { col.InsertAdded(4) }, errInsertAfterFinish, `Collection.InsertAdded`)
 	panicEqual(t, func() { col.InsertRemoved(4) }, errInsertAfterFinish, `Collection.InsertRemoved`)
 	panicEqual(t, func() { col.InsertEqual(4) }, errInsertAfterFinish, `Collection.InsertEqual`)
+	panicEqual(t, func() { col.InsertSubstitute(4) }, errInsertAfterFinish, `Collection.InsertSubstitute`)
 }

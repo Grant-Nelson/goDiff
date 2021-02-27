@@ -77,23 +77,23 @@ func (w *wagner) setCosts(cont *container.Container) {
 	}
 }
 
-func (w *wagner) getCost(i, j, bLen int) int {
+func (w *wagner) getCost(i, j, aLen int) int {
 	if i < 0 {
 		return j + 1
 	}
 	if j < 0 {
 		return i + 1
 	}
-	return w.costs[i*j*bLen]
+	return w.costs[i+j*aLen]
 }
 
 func (w *wagner) walkPath(cont *container.Container, col *collector.Collector) {
-	bLen := cont.BLength()
+	aLen := cont.ALength()
 	walk := newWalker(cont, col)
 	for walk.hasMore() {
-		aCost := w.getCost(walk.i-1, walk.j, bLen)
-		bCost := w.getCost(walk.i, walk.j-1, bLen)
-		cCost := w.getCost(walk.i-1, walk.j-1, bLen)
+		aCost := w.getCost(walk.i-1, walk.j, aLen)
+		bCost := w.getCost(walk.i, walk.j-1, aLen)
+		cCost := w.getCost(walk.i-1, walk.j-1, aLen)
 		minCost := container.Min3(aCost, bCost, cCost)
 
 		var curMove func()
