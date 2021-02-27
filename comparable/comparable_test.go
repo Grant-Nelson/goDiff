@@ -46,6 +46,30 @@ func Test_String(t *testing.T) {
 	strEqual(t, comp.BValue(1), `d`, `String.BValue(1)`)
 }
 
+func Test_Char(t *testing.T) {
+	comp := NewChar(`abc`, `ad`)
+	intEqual(t, comp.ALength(), 3, `Char.ALength`)
+	intEqual(t, comp.BLength(), 2, `Char.BLength`)
+	boolEqual(t, comp.Equals(0, 0), true, `Char.Equals(0, 0)`)
+	boolEqual(t, comp.Equals(0, 1), false, `Char.Equals(0, 1)`)
+	boolEqual(t, comp.Equals(1, 0), false, `Char.Equals(1, 0)`)
+	boolEqual(t, comp.Equals(1, 1), false, `Char.Equals(1, 1)`)
+	intEqual(t, int(comp.AValue(1)), 'b', `Char.AValue(1)`)
+	intEqual(t, int(comp.BValue(1)), 'd', `Char.BValue(1)`)
+}
+
+func Test_Runes(t *testing.T) {
+	comp := NewRunes([]rune(`abc`), []rune(`ad`))
+	intEqual(t, comp.ALength(), 3, `Runes.ALength`)
+	intEqual(t, comp.BLength(), 2, `Runes.BLength`)
+	boolEqual(t, comp.Equals(0, 0), true, `Runes.Equals(0, 0)`)
+	boolEqual(t, comp.Equals(0, 1), false, `Runes.Equals(0, 1)`)
+	boolEqual(t, comp.Equals(1, 0), false, `Runes.Equals(1, 0)`)
+	boolEqual(t, comp.Equals(1, 1), false, `Runes.Equals(1, 1)`)
+	intEqual(t, int(comp.AValue(1)), 'b', `Runes.AValue(1)`)
+	intEqual(t, int(comp.BValue(1)), 'd', `Runes.BValue(1)`)
+}
+
 func Test_Integer(t *testing.T) {
 	comp := NewInteger(
 		[]int{1, 2, 3},

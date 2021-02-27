@@ -67,11 +67,11 @@ func (w *wagner) setCosts(cont *container.Container) {
 
 	for j := 1; j < bLen; j++ {
 		for i := 1; i < aLen; i++ {
-			k := i + j*bLen
+			k := i + j*aLen
 			value := container.Min3(
 				w.costs[k-1]+1,
-				w.costs[k-bLen]+1,
-				w.costs[k-bLen-1]+cont.SubstitionCost(i, j))
+				w.costs[k-aLen]+1,
+				w.costs[k-aLen-1]+cont.SubstitionCost(i, j))
 			w.costs[k] = value
 		}
 	}

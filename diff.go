@@ -39,27 +39,38 @@ const defaultWagnerThreshold = 500
 // check that the collector can be used as the resulting diff.
 var _ Results = (*collector.Collector)(nil)
 
-// hirschbergDiff creates a new hirschberg algorithm instance for performing a diff.
-func hirschbergDiff(length int, useReduce bool) Algorithm {
-	h := hirschberg.New(nil, length, useReduce)
+// algorithm wraps an instance of a Diff into an Algorithm.
+func algorithm(diff container.Diff) Algorithm {
 	return func(comp comparable.Comparable) Results {
 		col := collector.New()
 		cont := container.New(comp)
-		h.Diff(cont, col)
+		cont, before, after := cont.Reduce()
+		col.InsertEqual(after)
+		if !container.EndCase(cont, col) {
+			diff.Diff(cont, col)
+		}
+		col.InsertEqual(before)
 		col.Finish()
 		return col
 	}
 }
 
+// hirschbergDiff creates a new hirschberg algorithm instance for performing a diff.
+//
+// The given length is the initial score vector size. If the vector is too small it will be
+// reallocated to the larger size. Use -1 to not preallocate the vectors.
+// The useReduce flag indicates if the equal padding edges should be checked
+// at each step of the algorithm or not.
+func hirschbergDiff(length int, useReduce bool) Algorithm {
+	return algorithm(hirschberg.New(nil, length, useReduce))
+}
+
+// wagnerDiff creates a new wagner algorithm instance for performing a diff.
+//
+// The given size is the amount of matrix space, width * height, to preallocate
+// for the Wagner-Fischer algorithm. Use -1 to not preallocate any matrix.
 func wagnerDiff(size int) Algorithm {
-	w := wagner.New(size)
-	return func(comp comparable.Comparable) Results {
-		col := collector.New()
-		cont := container.New(comp)
-		w.Diff(cont, col)
-		col.Finish()
-		return col
-	}
+	return algorithm(wagner.New(size))
 }
 
 // Diff will perform a diff on the given comparable information.

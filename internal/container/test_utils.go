@@ -1,4 +1,4 @@
-// +build !release
+// +build !release,!prod
 
 package container
 
