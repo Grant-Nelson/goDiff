@@ -44,18 +44,6 @@ func (s *scores) store() {
 	s.back, s.other = s.other, s.back
 }
 
-// min gets the minimum value of the three given values.
-func min(a, b, c int) int {
-	result := a
-	if result > b {
-		result = b
-	}
-	if result > c {
-		result = c
-	}
-	return result
-}
-
 // calculate calculates the Needleman-Wunsch score.
 // At the end of this calculation the score is in the back vector.
 func (s *scores) calculate(cont *container.Container) {
@@ -73,7 +61,7 @@ func (s *scores) calculate(cont *container.Container) {
 	for i := 1; i <= aLen; i++ {
 		s.front[0] = s.back[0] + container.RemoveCost
 		for j := 1; j <= bLen; j++ {
-			s.front[j] = min(
+			s.front[j] = container.Min3(
 				s.back[j-1]+cont.SubstitionCost(i-1, j-1),
 				s.back[j]+container.RemoveCost,
 				s.front[j-1]+container.AddCost)

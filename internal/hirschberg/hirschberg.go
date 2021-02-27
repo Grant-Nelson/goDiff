@@ -23,19 +23,22 @@ type hirschberg struct {
 //
 // The given length is the initial score vector size. If the vector is too small it will be
 // reallocated to the larger size. Use -1 to not preallocate the vectors.
-func New(hybrid container.Diff, length int) container.Diff {
+//
+// The useReduce flag indicates if the equal padding edges should be checked
+// at each step of the algorithm or not.
+func New(hybrid container.Diff, length int, useReduce bool) container.Diff {
 	return &hirschberg{
 		scores:    newScores(length),
 		hybrid:    hybrid,
-		useReduce: true,
+		useReduce: useReduce,
 	}
 }
 
-// WillResize determines if the diff algorithm can handle a container with
+// NoResizeNeeded determines if the diff algorithm can handle a container with
 // the amount of data inside of the given container.
 // This algorithm's score vectors will be auto-resize if needed so this method
 // only indicates if the current vectors are large enough to not need reallocation.
-func (h *hirschberg) WillResize(cont *container.Container) bool {
+func (h *hirschberg) NoResizeNeeded(cont *container.Container) bool {
 	return len(h.scores.back) >= cont.BLength()+1
 }
 
@@ -59,81 +62,18 @@ func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
 			stack.Push(nil, before)
 		}
 
-		bLen := cur.BLength()
-		if bLen <= 1 {
-			bEdge(cur, col)
+		if container.EndCase(cur, col) {
 			continue
 		}
 
-		aLen := cur.ALength()
-		if aLen <= 1 {
-			aEdge(cur, col)
-			continue
-		}
-
-		if (h.hybrid != nil) && h.hybrid.WillResize(cur) {
+		if (h.hybrid != nil) && h.hybrid.NoResizeNeeded(cur) {
 			h.hybrid.Diff(cur, col)
 			continue
 		}
 
+		aLen, bLen := cur.ALength(), cur.BLength()
 		aMid, bMid := h.scores.Split(cur)
 		stack.Push(cur.Sub(0, aMid, 0, bMid, false), 0)
 		stack.Push(cur.Sub(aMid, aLen, bMid, bLen, false), 0)
-	}
-}
-
-// aEdge handles when at the edge of the A source subset in the given container.
-func aEdge(cont *container.Container, col *collector.Collector) {
-	aLen := cont.ALength()
-	bLen := cont.BLength()
-
-	if aLen <= 0 {
-		col.InsertAdded(bLen)
-		return
-	}
-
-	split := -1
-	for j := 0; j < bLen; j++ {
-		if cont.Equals(0, j) {
-			split = j
-			break
-		}
-	}
-
-	if split < 0 {
-		col.InsertAdded(bLen)
-		col.InsertRemoved(1)
-	} else {
-		col.InsertAdded(bLen - split - 1)
-		col.InsertEqual(1)
-		col.InsertAdded(split)
-	}
-}
-
-// bEdge Handles when at the edge of the B source subset in the given container.
-func bEdge(cont *container.Container, col *collector.Collector) {
-	aLen := cont.ALength()
-	bLen := cont.BLength()
-
-	if bLen <= 0 {
-		col.InsertRemoved(aLen)
-		return
-	}
-
-	split := -1
-	for i := 0; i < aLen; i++ {
-		if cont.Equals(i, 0) {
-			split = i
-			break
-		}
-	}
-
-	if split < 0 {
-		col.InsertAdded(1)
-		col.InsertRemoved(aLen)
-	} else {
-		col.InsertRemoved(aLen - split - 1)
-		col.InsertEqual(1)
-		col.InsertRemoved(split)
 	}
 }

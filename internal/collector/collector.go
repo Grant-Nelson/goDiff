@@ -19,13 +19,13 @@ type (
 	stepNode struct {
 
 		// Step is the type for this group.
-		Step step.Type
+		step step.Type
 
 		// Count is the number of the given type in the group.
-		Count int
+		count int
 
 		// Next is the step which occurs after this step, or nil when done.
-		Next *stepNode
+		next *stepNode
 	}
 
 	// Collector collects, groups, and reverses the steps taken
@@ -73,9 +73,9 @@ func New() *Collector {
 // push pushes a new step into the collection.
 func (c *Collector) push(step step.Type, count int) {
 	c.head = &stepNode{
-		Step:  step,
-		Count: count,
-		Next:  c.head,
+		step:  step,
+		count: count,
+		next:  c.head,
 	}
 	c.count++
 	c.total += count
@@ -150,6 +150,17 @@ func (c *Collector) InsertEqual(count int) {
 	}
 }
 
+// InsertSubstitute inserts new Added and Removed parts into this collection.
+// This is expected to be inserted in reverse order from the expected result.
+func (c *Collector) InsertSubstitute(count int) {
+	c.panicIfFinished(errInsertAfterFinish)
+	if count > 0 {
+		c.pushEqual()
+		c.addedRun += count
+		c.removedRun += count
+	}
+}
+
 // Finish inserts any remaining parts which haven't been inserted yet.
 func (c *Collector) Finish() {
 	c.panicIfFinished(errFinishAfterFinish)
@@ -186,8 +197,8 @@ func (c *Collector) Read(hndl step.PathCallback) {
 	if hndl != nil {
 		node := c.head
 		for node != nil {
-			hndl(node.Step, node.Count)
-			node = node.Next
+			hndl(node.step, node.count)
+			node = node.next
 		}
 	}
 }

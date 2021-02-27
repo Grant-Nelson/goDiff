@@ -23,10 +23,10 @@ type (
 	// Diff is the interface for a diff algorithm.
 	Diff interface {
 
-		// WillResize determines if the diff algorithm can handle a container with
+		// NoResizeNeeded determines if the diff algorithm can handle a container with
 		// the amount of data inside of the given container. If this returns false a
 		// larger matrix, cache, vector, or whatever would be created to perform the diff.
-		WillResize(cont *Container) bool
+		NoResizeNeeded(cont *Container) bool
 
 		// Diff performs the algorithm on the given container
 		// and writes the results to the collector.
@@ -44,14 +44,6 @@ type (
 		reverse bool
 	}
 )
-
-// min gets the minimum value from the two given values.
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
 
 // check that the container also implements the comparable.
 var _ comparable.Comparable = (*Container)(nil)
@@ -133,7 +125,7 @@ func (cont *Container) Sub(aLow, aHigh, bLow, bHigh int, reverse bool) *Containe
 // The amount before and after which are equal are returned and
 // the reduced subcontainer is returned.
 func (cont *Container) Reduce() (sub *Container, before, after int) {
-	width := min(cont.aLength, cont.bLength)
+	width := Min2(cont.aLength, cont.bLength)
 	for before = 0; before < width; before++ {
 		if !cont.Equals(before, before) {
 			break
