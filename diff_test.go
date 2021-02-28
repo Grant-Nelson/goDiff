@@ -1,25 +1,24 @@
 package godiff
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/Grant-Nelson/goDiff/comparable"
-	"github.com/Grant-Nelson/goDiff/step"
+	"github.com/Grant-Nelson/goDiff/internal/collector"
 )
 
 func TestLevenshteinDistance(t *testing.T) {
 	checkLP(t, "A", "A", "=1")
-	checkLP(t, "A", "B", "-1, +1")
-	checkLP(t, "A", "AB", "=1, +1")
-	checkLP(t, "A", "BA", "+1, =1")
-	checkLP(t, "AB", "A", "=1, -1")
-	checkLP(t, "BA", "A", "-1, =1")
-	checkLP(t, "kitten", "sitting", "-1, +1, =3, -1, +1, =1, +1")
-	checkLP(t, "saturday", "sunday", "=1, -2, =1, -1, +1, =3")
-	checkLP(t, "satxrday", "sunday", "=1, -4, +2, =3")
-	checkLP(t, "ABC", "ADB", "=1, +1, =1, -1")
+	checkLP(t, "A", "B", "-1 +1")
+	checkLP(t, "A", "AB", "=1 +1")
+	checkLP(t, "A", "BA", "+1 =1")
+	checkLP(t, "AB", "A", "=1 -1")
+	checkLP(t, "BA", "A", "-1 =1")
+	checkLP(t, "kitten", "sitting", "-1 +1 =3 -1 +1 =1 +1")
+	checkLP(t, "saturday", "sunday", "=1 -2 =1 -1 +1 =3")
+	checkLP(t, "satxrday", "sunday", "=1 -4 +2 =3")
+	checkLP(t, "ABC", "ADB", "=1 +1 =1 -1")
 }
 
 func TestPartDiff(t *testing.T) {
@@ -203,11 +202,7 @@ func lines(ln ...string) []string {
 // checks the levenshtein distance algorithm
 func checkLP(t *testing.T, a, b, exp string) {
 	path := Diff(comparable.NewChar(a, b))
-	parts := make([]string, 0, path.Count())
-	path.Read(func(stepType step.Type, count int) {
-		parts = append(parts, fmt.Sprintf("%s%d", stepType.String(), count))
-	})
-	result := strings.Join(parts, `, `)
+	result := path.(*collector.Collector).String()
 	if exp != result {
 		t.Error("Levenshtein Distance returned unexpected result:",
 			"\n   Input A:  ", a,

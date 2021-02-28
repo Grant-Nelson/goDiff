@@ -7,7 +7,6 @@ import (
 
 	"github.com/Grant-Nelson/goDiff/comparable"
 	"github.com/Grant-Nelson/goDiff/internal/collector"
-	"github.com/Grant-Nelson/goDiff/step"
 )
 
 func Test_Min2(t *testing.T) {
@@ -233,13 +232,7 @@ func endCaseCheck(t *testing.T, cont *Container, expBool bool, expCol string) {
 	col := collector.New()
 	resultBool := cont.EndCase(col)
 	col.Finish()
-
-	parts := make([]string, 0, col.Count())
-	col.Read(func(step step.Type, count int) {
-		parts = append(parts, fmt.Sprintf(`%s%d`, step.String(), count))
-	})
-	resultCol := strings.Join(parts, ` `)
-
+	resultCol := col.String()
 	if (resultBool != expBool) || (resultCol != expCol) {
 		t.Error(fmt.Sprint("Unexpected EndCase results:",
 			"\n   Container:  ", cont,

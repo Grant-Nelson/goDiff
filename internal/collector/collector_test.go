@@ -2,10 +2,7 @@ package collector
 
 import (
 	"fmt"
-	"strings"
 	"testing"
-
-	"github.com/Grant-Nelson/goDiff/step"
 )
 
 func Test_Basics(t *testing.T) {
@@ -29,6 +26,7 @@ func Test_Basics(t *testing.T) {
 	col.InsertEqual(-6)
 	col.InsertAdded(-6)
 
+	readEqual(t, col, `not finished`)
 	boolEqual(t, col.Finished(), false, `Collection.Finished`)
 	col.Finish()
 	boolEqual(t, col.Finished(), true, `Collection.Finished`)
@@ -84,12 +82,7 @@ func intEqual(t *testing.T, value, exp int, msg string) {
 }
 
 func readEqual(t *testing.T, col *Collector, exp string) {
-	parts := make([]string, 0, col.Count())
-	col.Read(func(step step.Type, count int) {
-		parts = append(parts, fmt.Sprintf(`%s%d`, step.String(), count))
-	})
-	value := strings.Join(parts, ` `)
-	if value != exp {
+	if value := col.String(); value != exp {
 		t.Error(fmt.Sprint("Unexpected collection read:",
 			"\n   Value:    ", value,
 			"\n   Expected: ", exp))
