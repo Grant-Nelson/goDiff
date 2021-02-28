@@ -16,9 +16,6 @@ func Min3(a, b, c int) int {
 		if a < c {
 			return a
 		}
-		if b < c {
-			return b
-		}
 		return c
 	}
 	if b < c {
@@ -30,16 +27,16 @@ func Min3(a, b, c int) int {
 // EndCase determines if the given container is small enough to be simply added
 // into the collector without any diff algorithm. This will add into the given
 // collector and return true if done, otherwise it will return false.
-func EndCase(cont *Container, col *collector.Collector) bool {
+func (cont *Container) EndCase(col *collector.Collector) bool {
 	aLen := cont.ALength()
 	if aLen <= 1 {
-		aEdge(cont, col)
+		cont.aEdge(col)
 		return true
 	}
 
 	bLen := cont.BLength()
 	if bLen <= 1 {
-		bEdge(cont, col)
+		cont.bEdge(col)
 		return true
 	}
 
@@ -47,7 +44,7 @@ func EndCase(cont *Container, col *collector.Collector) bool {
 }
 
 // aEdge handles when at the edge of the A source subset in the given container.
-func aEdge(cont *Container, col *collector.Collector) {
+func (cont *Container) aEdge(col *collector.Collector) {
 	aLen := cont.ALength()
 	bLen := cont.BLength()
 
@@ -75,7 +72,7 @@ func aEdge(cont *Container, col *collector.Collector) {
 }
 
 // bEdge Handles when at the edge of the B source subset in the given container.
-func bEdge(cont *Container, col *collector.Collector) {
+func (cont *Container) bEdge(col *collector.Collector) {
 	aLen := cont.ALength()
 	bLen := cont.BLength()
 

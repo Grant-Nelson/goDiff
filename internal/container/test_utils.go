@@ -28,7 +28,6 @@ func (cont *Container) BAdjust(bIndex int) int {
 // represented by this comparable.
 // This only works for String or RuneSlice comparables.
 func (cont *Container) AParts() []string {
-	fmt.Println(`>>`, cont)
 	parts := make([]string, cont.aLength)
 	for i := 0; i < cont.aLength; i++ {
 		parts[i] = comparable.APart(cont.comp, cont.AAdjust(i))

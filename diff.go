@@ -46,7 +46,7 @@ func algorithm(diff container.Diff) Algorithm {
 		cont := container.New(comp)
 		cont, before, after := cont.Reduce()
 		col.InsertEqual(after)
-		if !container.EndCase(cont, col) {
+		if !cont.EndCase(col) {
 			diff.Diff(cont, col)
 		}
 		col.InsertEqual(before)

@@ -62,7 +62,7 @@ func (h *hirschberg) Diff(cont *container.Container, col *collector.Collector) {
 			stack.Push(nil, before)
 		}
 
-		if container.EndCase(cur, col) {
+		if cur.EndCase(col) {
 			continue
 		}
 

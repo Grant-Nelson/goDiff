@@ -100,11 +100,12 @@ func (cont *Container) SubstitionCost(i, j int) int {
 }
 
 // Sub creates a new comparable container for a subset and reverse relative to this container's settings.
+// The high values are exclusive, the low is inclusive.
 func (cont *Container) Sub(aLow, aHigh, bLow, bHigh int, reverse bool) *Container {
 	if cont.reverse {
 		return newSub(cont.comp,
-			cont.aLength-1-aHigh+cont.aOffset, aHigh-aLow,
-			cont.bLength-1-bHigh+cont.bOffset, bHigh-bLow,
+			cont.aLength-aHigh+cont.aOffset, aHigh-aLow,
+			cont.bLength-bHigh+cont.bOffset, bHigh-bLow,
 			!reverse)
 	}
 
