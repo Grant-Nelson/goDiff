@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/Grant-Nelson/goDiff/comparable"
+	"github.com/Grant-Nelson/goDiff/internal/collector"
+	"github.com/Grant-Nelson/goDiff/step"
 )
 
 func Test_Min2(t *testing.T) {
@@ -36,7 +38,7 @@ func Test_Min3(t *testing.T) {
 
 func Test_Equals(t *testing.T) {
 	cont := newCont(`cat`, `kitten`)
-	check(t, cont, `cat`, `kitten`)
+	check(t, cont, `cat`, `kitten`, `0, 3, 0, 6, false`)
 	intEqual(t, cont.ALength(), 3, `ALength`)
 	intEqual(t, cont.BLength(), 6, `BLength`)
 	boolEqual(t, cont.Equals(0, 0), false, `Equal(0, 0)`)
@@ -49,7 +51,7 @@ func Test_Equals(t *testing.T) {
 
 func Test_Equals_Reversed(t *testing.T) {
 	cont := reverse(newCont(`cat`, `kitten`))
-	check(t, cont, `tac`, `nettik`)
+	check(t, cont, `tac`, `nettik`, `0, 3, 0, 6, true`)
 	intEqual(t, cont.ALength(), 3, `ALength`)
 	intEqual(t, cont.BLength(), 6, `BLength`)
 	boolEqual(t, cont.Equals(0, 0), false, `Equal(0, 0)`)
@@ -62,16 +64,19 @@ func Test_Equals_Reversed(t *testing.T) {
 
 func Test_Sub(t *testing.T) {
 	cont := newCont(`abcdef`, `ghi`)
-	check(t, cont, `abcdef`, `ghi`)
+	check(t, cont, `abcdef`, `ghi`, `0, 6, 0, 3, false`)
 	subCheck(t, cont, 0, 3, 0, 3, false, `abc`, `ghi`)
 	subCheck(t, cont, 1, 4, 1, 3, false, `bcd`, `hi`)
 	subCheck(t, cont, 0, 3, 0, 3, true, `cba`, `ihg`)
 	subCheck(t, cont, 2, 5, 1, 3, true, `edc`, `ih`)
+
+	sub := cont.Sub(2, 5, 1, 3, true)
+	check(t, sub, `edc`, `ih`, `2, 3, 1, 2, true`)
 }
 
 func Test_Sub_Reversed(t *testing.T) {
 	cont := reverse(newCont(`abcdef`, `ghi`))
-	check(t, cont, `fedcba`, `ihg`)
+	check(t, cont, `fedcba`, `ihg`, `0, 6, 0, 3, true`)
 	subCheck(t, cont, 0, 3, 0, 3, false, `fed`, `ihg`)
 	subCheck(t, cont, 1, 4, 1, 3, false, `edc`, `hg`)
 	subCheck(t, cont, 0, 3, 0, 3, true, `def`, `ghi`)
@@ -102,6 +107,29 @@ func Test_Reduce_Reversed(t *testing.T) {
 	reduceCheck(t, reverse(newCont(`abcd`, `abd`)), `c`, ``, 1, 2)
 	reduceCheck(t, reverse(newCont(`abc`, ``)), `cba`, ``, 0, 0)
 	reduceCheck(t, reverse(newCont(``, `abc`)), ``, `cba`, 0, 0)
+}
+
+func Test_EndCase(t *testing.T) {
+	endCaseCheck(t, newCont(`abc`, `abc`), false, ``)
+	endCaseCheck(t, newCont(``, ``), true, ``)
+
+	endCaseCheck(t, newCont(`a`, ``), true, `-1`)
+	endCaseCheck(t, newCont(`ab`, ``), true, `-2`)
+	endCaseCheck(t, newCont(`abc`, ``), true, `-3`)
+
+	endCaseCheck(t, newCont(``, `a`), true, `+1`)
+	endCaseCheck(t, newCont(``, `ab`), true, `+2`)
+	endCaseCheck(t, newCont(``, `abc`), true, `+3`)
+
+	endCaseCheck(t, newCont(`abc`, `a`), true, `=1 -2`)
+	endCaseCheck(t, newCont(`abc`, `b`), true, `-1 =1 -1`)
+	endCaseCheck(t, newCont(`abc`, `c`), true, `-2 =1`)
+	endCaseCheck(t, newCont(`abc`, `d`), true, `-3 +1`)
+
+	endCaseCheck(t, newCont(`a`, `abc`), true, `=1 +2`)
+	endCaseCheck(t, newCont(`b`, `abc`), true, `+1 =1 +1`)
+	endCaseCheck(t, newCont(`c`, `abc`), true, `+2 =1`)
+	endCaseCheck(t, newCont(`d`, `abc`), true, `-1 +3`)
 }
 
 func checkMin2(t *testing.T, a, b, exp int) {
@@ -157,20 +185,21 @@ func reverse(c *Container) *Container {
 	return c.Sub(0, c.aLength, 0, c.bLength, !c.reverse)
 }
 
-func check(t *testing.T, cont *Container, expA, expB string) {
+func check(t *testing.T, cont *Container, expA, expB, expStr string) {
 	resultA := strings.Join(cont.AParts(), ``)
 	resultB := strings.Join(cont.BParts(), ``)
-	if (resultA != expA) || (resultB != expB) {
+	resultStr := cont.String()
+	if (resultA != expA) || (resultB != expB) || (resultStr != expStr) {
 		t.Error(fmt.Sprint(
 			"Unexpected resulting container:",
 			"\n   Container:  ", cont,
 			"\n   Result A:   ", resultA, " => ", expA,
-			"\n   Result B:   ", resultB, " => ", expB))
+			"\n   Result B:   ", resultB, " => ", expB,
+			"\n   Result Str: ", resultStr, " => ", expStr))
 	}
-	return
 }
 
-func subCheck(t *testing.T, cont *Container, aLow, aHigh, bLow, bHigh int, reverse bool, expA, expB string) *Container {
+func subCheck(t *testing.T, cont *Container, aLow, aHigh, bLow, bHigh int, reverse bool, expA, expB string) {
 	sub := cont.Sub(aLow, aHigh, bLow, bHigh, reverse)
 	resultA := strings.Join(sub.AParts(), ``)
 	resultB := strings.Join(sub.BParts(), ``)
@@ -182,10 +211,9 @@ func subCheck(t *testing.T, cont *Container, aLow, aHigh, bLow, bHigh int, rever
 			"\n   A Parts:  ", resultA, " => ", expA,
 			"\n   B Parts:  ", resultB, " => ", expB))
 	}
-	return sub
 }
 
-func reduceCheck(t *testing.T, cont *Container, expA, expB string, expBefore, expAfter int) *Container {
+func reduceCheck(t *testing.T, cont *Container, expA, expB string, expBefore, expAfter int) {
 	sub, before, after := cont.Reduce()
 	resultA := strings.Join(sub.AParts(), ``)
 	resultB := strings.Join(sub.BParts(), ``)
@@ -199,5 +227,23 @@ func reduceCheck(t *testing.T, cont *Container, expA, expB string, expBefore, ex
 			"\n   Before:   ", before, " => ", expBefore,
 			"\n   After:    ", after, " => ", expAfter))
 	}
-	return sub
+}
+
+func endCaseCheck(t *testing.T, cont *Container, expBool bool, expCol string) {
+	col := collector.New()
+	resultBool := cont.EndCase(col)
+	col.Finish()
+
+	parts := make([]string, 0, col.Count())
+	col.Read(func(step step.Type, count int) {
+		parts = append(parts, fmt.Sprintf(`%s%d`, step.String(), count))
+	})
+	resultCol := strings.Join(parts, ` `)
+
+	if (resultBool != expBool) || (resultCol != expCol) {
+		t.Error(fmt.Sprint("Unexpected EndCase results:",
+			"\n   Container:  ", cont,
+			"\n   Result:     ", resultBool, " => ", expBool,
+			"\n   Collection: ", resultCol, " => ", expCol))
+	}
 }
