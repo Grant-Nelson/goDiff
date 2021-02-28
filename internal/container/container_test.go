@@ -8,8 +8,48 @@ import (
 	"github.com/Grant-Nelson/goDiff/comparable"
 )
 
+func Test_Reduce(t *testing.T) {
+	reduceCheck(t, newCont(`a b c`, `a b c`), ``, ``, 3, 0)
+	reduceCheck(t, newCont(`a b c`, `d e f`), `a b c`, `d e f`, 0, 0)
+
+	reduceCheck(t, newCont(`a b c`, `a e f`), `b c`, `e f`, 1, 0)
+	reduceCheck(t, newCont(`a b c`, `d e c`), `a b`, `d e`, 0, 1)
+
+	reduceCheck(t, newCont(`a b c`, `a c`), `b`, ``, 1, 1)
+	reduceCheck(t, newCont(`a c`, `a b c`), ``, `b`, 1, 1)
+
+	reduceCheck(t, newCont(`a b c d`, `a c d`), `b`, ``, 1, 2)
+	reduceCheck(t, newCont(`a b c d`, `a b d`), `c`, ``, 2, 1)
+
+	reduceCheck(t, newCont(`a b c`, ``), `a b c`, ``, 0, 0)
+	reduceCheck(t, newCont(``, `a b c`), ``, `a b c`, 0, 0)
+}
+
+func Test_Reduce_Reversed(t *testing.T) {
+	reduceCheck(t, reverse(newCont(`a b c`, `a b c`)), ``, ``, 0, 3)
+	reduceCheck(t, reverse(newCont(`a b c`, `d e f`)), `c b a`, `f e d`, 0, 0)
+
+	reduceCheck(t, reverse(newCont(`a b c`, `a e f`)), `c b`, `f e`, 0, 1)
+	reduceCheck(t, reverse(newCont(`a b c`, `d e c`)), `b a`, `e d`, 1, 0)
+
+	reduceCheck(t, reverse(newCont(`a b c`, `a c`)), `b`, ``, 1, 1)
+	reduceCheck(t, reverse(newCont(`a c`, `a b c`)), ``, `b`, 1, 1)
+
+	reduceCheck(t, reverse(newCont(`a b c d`, `a c d`)), `b`, ``, 2, 1)
+	reduceCheck(t, reverse(newCont(`a b c d`, `a b d`)), `c`, ``, 1, 2)
+
+	reduceCheck(t, reverse(newCont(`a b c`, ``)), `c b a`, ``, 0, 0)
+	reduceCheck(t, reverse(newCont(``, `a b c`)), ``, `c b a`, 0, 0)
+}
+
+// TODO: Add more tests including tests of sub
+
 func newCont(a, b string) *Container {
 	return New(comparable.NewString(strings.Split(a, ` `), strings.Split(b, ` `)))
+}
+
+func reverse(c *Container) *Container {
+	return c.Sub(0, c.aLength, 0, c.bLength, !c.reverse)
 }
 
 func check(t *testing.T, cont *Container, expA, expB string) {
@@ -41,22 +81,3 @@ func reduceCheck(t *testing.T, cont *Container, expA, expB string, expBefore, ex
 	}
 	return sub
 }
-
-func Test_Reduce(t *testing.T) {
-	reduceCheck(t, newCont(`a b c`, `a b c`), ``, ``, 3, 0)
-	reduceCheck(t, newCont(`a b c`, `d e f`), `a b c`, `d e f`, 0, 0)
-
-	reduceCheck(t, newCont(`a b c`, `a e f`), `b c`, `e f`, 1, 0)
-	reduceCheck(t, newCont(`a b c`, `d e c`), `a b`, `d e`, 0, 1)
-
-	reduceCheck(t, newCont(`a b c`, `a c`), `b`, ``, 1, 1)
-	reduceCheck(t, newCont(`a c`, `a b c`), ``, `b`, 1, 1)
-
-	reduceCheck(t, newCont(`a b c d`, `a c d`), `b`, ``, 1, 2)
-	reduceCheck(t, newCont(`a b c d`, `a b d`), `c`, ``, 2, 1)
-
-	reduceCheck(t, newCont(`a b c`, ``), `a b c`, ``, 0, 0)
-	reduceCheck(t, newCont(``, `a b c`), ``, `a b c`, 0, 0)
-}
-
-// TODO: Add more tests including tests of sub and reduce/reverse

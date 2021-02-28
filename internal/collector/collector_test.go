@@ -8,57 +8,6 @@ import (
 	"github.com/Grant-Nelson/goDiff/step"
 )
 
-func boolEqual(t *testing.T, value, exp bool, msg string) {
-	if value != exp {
-		t.Error(fmt.Sprint("Unexpected boolean value:",
-			"\n   Message:  ", msg,
-			"\n   Value:    ", value,
-			"\n   Expected: ", exp))
-	}
-}
-
-func intEqual(t *testing.T, value, exp int, msg string) {
-	if value != exp {
-		t.Error(fmt.Sprint("Unexpected integer value:",
-			"\n   Message:  ", msg,
-			"\n   Value:    ", value,
-			"\n   Expected: ", exp))
-	}
-}
-
-func readEqual(t *testing.T, col *Collector, exp string) {
-	parts := make([]string, 0, col.Count())
-	col.Read(func(step step.Type, count int) {
-		parts = append(parts, fmt.Sprintf(`%s%d`, step.String(), count))
-	})
-	value := strings.Join(parts, ` `)
-	if value != exp {
-		t.Error(fmt.Sprint("Unexpected collection read:",
-			"\n   Value:    ", value,
-			"\n   Expected: ", exp))
-	}
-}
-
-func panicEqual(t *testing.T, hndl func(), exp, msg string) {
-	value := func() (errMsg string) {
-		defer func() {
-			if r := recover(); r != nil {
-				errMsg = fmt.Sprint(r)
-			}
-		}()
-
-		hndl()
-
-		return `no panic occurred`
-	}()
-	if value != exp {
-		t.Error(fmt.Sprint("Unexpected panic message:",
-			"\n   Message:  ", msg,
-			"\n   Value:    ", value,
-			"\n   Expected: ", exp))
-	}
-}
-
 func Test_Basics(t *testing.T) {
 	col := New()
 
@@ -114,4 +63,55 @@ func Test_Error(t *testing.T) {
 	panicEqual(t, func() { col.InsertRemoved(4) }, errInsertAfterFinish, `Collection.InsertRemoved`)
 	panicEqual(t, func() { col.InsertEqual(4) }, errInsertAfterFinish, `Collection.InsertEqual`)
 	panicEqual(t, func() { col.InsertSubstitute(4) }, errInsertAfterFinish, `Collection.InsertSubstitute`)
+}
+
+func boolEqual(t *testing.T, value, exp bool, msg string) {
+	if value != exp {
+		t.Error(fmt.Sprint("Unexpected boolean value:",
+			"\n   Message:  ", msg,
+			"\n   Value:    ", value,
+			"\n   Expected: ", exp))
+	}
+}
+
+func intEqual(t *testing.T, value, exp int, msg string) {
+	if value != exp {
+		t.Error(fmt.Sprint("Unexpected integer value:",
+			"\n   Message:  ", msg,
+			"\n   Value:    ", value,
+			"\n   Expected: ", exp))
+	}
+}
+
+func readEqual(t *testing.T, col *Collector, exp string) {
+	parts := make([]string, 0, col.Count())
+	col.Read(func(step step.Type, count int) {
+		parts = append(parts, fmt.Sprintf(`%s%d`, step.String(), count))
+	})
+	value := strings.Join(parts, ` `)
+	if value != exp {
+		t.Error(fmt.Sprint("Unexpected collection read:",
+			"\n   Value:    ", value,
+			"\n   Expected: ", exp))
+	}
+}
+
+func panicEqual(t *testing.T, hndl func(), exp, msg string) {
+	value := func() (errMsg string) {
+		defer func() {
+			if r := recover(); r != nil {
+				errMsg = fmt.Sprint(r)
+			}
+		}()
+
+		hndl()
+
+		return `no panic occurred`
+	}()
+	if value != exp {
+		t.Error(fmt.Sprint("Unexpected panic message:",
+			"\n   Message:  ", msg,
+			"\n   Value:    ", value,
+			"\n   Expected: ", exp))
+	}
 }

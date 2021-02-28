@@ -142,15 +142,13 @@ func (cont *Container) Reduce() (*Container, int, int) {
 		j--
 	}
 
-	if cont.reverse {
-		return newSub(cont.comp,
-			before-1+cont.aOffset, cont.aLength-after-before,
-			before-1+cont.bOffset, cont.bLength-after-before,
-			false), after, before
-	}
-
-	return newSub(cont.comp,
+	sub := newSub(cont.comp,
 		before+cont.aOffset, cont.aLength-after-before,
 		before+cont.bOffset, cont.bLength-after-before,
-		false), before, after
+		cont.reverse)
+
+	if cont.reverse {
+		return sub, after, before
+	}
+	return sub, before, after
 }
