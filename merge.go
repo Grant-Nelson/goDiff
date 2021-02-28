@@ -7,16 +7,27 @@ import (
 
 // Merge gets the labelled difference between the two slices
 // using a similar output to the git merge differences output.
+// This will use the default diff configuration to perform the diff.
 func Merge(a, b []string) []string {
+	return MergeCustom(nil, a, b)
+}
+
+// MergeCustom gets the labelled difference between the two slices
+// using a similar output to the git merge differences output.
+// This was can use any given diff algorithm.
+func MergeCustom(diff Algorithm, a, b []string) []string {
+	if diff == nil {
+		diff = DefaultDiff()
+	}
+	path := diff(comparable.NewString(a, b))
+
 	const (
 		startChange  = "<<<<<<<<"
 		middleChange = "========"
 		endChange    = ">>>>>>>>"
 	)
 
-	path := Diff(comparable.NewString(a, b))
-
-	result := make([]string, 0, path.Total()+path.Count()*2)
+	result := make([]string, 0, path.Total()+path.Count()*2+1)
 	aIndex, bIndex := 0, 0
 
 	prevState := step.Equal
@@ -54,7 +65,8 @@ func Merge(a, b []string) []string {
 			case step.Equal:
 				result = append(result, startChange)
 			case step.Added:
-				result = append(result, middleChange)
+				result = append(result, endChange)
+				result = append(result, startChange)
 			}
 			for i := count - 1; i >= 0; i-- {
 				result = append(result, a[aIndex])

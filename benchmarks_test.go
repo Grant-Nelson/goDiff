@@ -24,49 +24,63 @@ func runBenchmarks(b *testing.B, comp comparable.Comparable, suffix string) {
 	b.Run(fmt.Sprintf(`Hirschberg-NoReduce%s`, suffix),
 		func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				hirschbergDiff(-1, false)(comp)
+				HirschbergDiff(-1, false)(comp)
 			}
 		})
 
 	b.Run(fmt.Sprintf(`Hirschberg-UseReduce%s`, suffix),
 		func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				hirschbergDiff(-1, true)(comp)
+				HirschbergDiff(-1, true)(comp)
 			}
 		})
 
 	b.Run(fmt.Sprintf(`Wagner%s`, suffix),
 		func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				wagnerDiff(-1)(comp)
+				WagnerDiff(-1)(comp)
 			}
 		})
 
 	b.Run(fmt.Sprintf(`Hybrid-NoReduce-100%s`, suffix),
 		func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				hybridDiff(-1, false, 100)(comp)
+				HybridDiff(-1, false, 100)(comp)
 			}
 		})
 
 	b.Run(fmt.Sprintf(`Hybrid-UesReduce-100%s`, suffix),
 		func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				hybridDiff(-1, true, 100)(comp)
+				HybridDiff(-1, true, 100)(comp)
+			}
+		})
+
+	b.Run(fmt.Sprintf(`Hybrid-NoReduce-300%s`, suffix),
+		func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				HybridDiff(-1, false, 300)(comp)
+			}
+		})
+
+	b.Run(fmt.Sprintf(`Hybrid-UseReduce-300%s`, suffix),
+		func(b *testing.B) {
+			for n := 0; n < b.N; n++ {
+				HybridDiff(-1, true, 300)(comp)
 			}
 		})
 
 	b.Run(fmt.Sprintf(`Hybrid-NoReduce-500%s`, suffix),
 		func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				hybridDiff(-1, false, 500)(comp)
+				HybridDiff(-1, false, 500)(comp)
 			}
 		})
 
 	b.Run(fmt.Sprintf(`Hybrid-UseReduce-500%s`, suffix),
 		func(b *testing.B) {
 			for n := 0; n < b.N; n++ {
-				hybridDiff(-1, true, 500)(comp)
+				HybridDiff(-1, true, 500)(comp)
 			}
 		})
 }

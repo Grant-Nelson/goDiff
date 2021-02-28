@@ -3,6 +3,8 @@ package collector
 import (
 	"fmt"
 	"testing"
+
+	"github.com/Grant-Nelson/goDiff/step"
 )
 
 func Test_Basics(t *testing.T) {
@@ -61,6 +63,20 @@ func Test_Error(t *testing.T) {
 	panicEqual(t, func() { col.InsertRemoved(4) }, errInsertAfterFinish, `Collection.InsertRemoved`)
 	panicEqual(t, func() { col.InsertEqual(4) }, errInsertAfterFinish, `Collection.InsertEqual`)
 	panicEqual(t, func() { col.InsertSubstitute(4) }, errInsertAfterFinish, `Collection.InsertSubstitute`)
+}
+
+func Test_ForcePush(t *testing.T) {
+	col := New()
+
+	col.ForcePush(step.Added, 1)
+	col.ForcePush(step.Added, 2)
+	col.ForcePush(step.Removed, 3)
+	col.ForcePush(step.Removed, 4)
+	col.ForcePush(step.Equal, 5)
+	col.ForcePush(step.Equal, 6)
+	col.Finish()
+
+	readEqual(t, col, `=6 =5 -4 -3 +2 +1`)
 }
 
 func boolEqual(t *testing.T, value, exp bool, msg string) {

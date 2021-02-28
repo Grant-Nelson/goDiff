@@ -21,3 +21,11 @@ func (c *Collector) String() string {
 	})
 	return strings.Join(parts, ` `)
 }
+
+// ForcePush pushes a new step into the collection
+// without otherwise effecting the collector.
+// This is used to test very specific edge cases which may or may not
+// occur, but should be protected against, when processing results of a diff.
+func (c *Collector) ForcePush(step step.Type, count int) {
+	c.push(step, count)
+}
