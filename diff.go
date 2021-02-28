@@ -75,5 +75,6 @@ func wagnerDiff(size int) Algorithm {
 
 // Diff will perform a diff on the given comparable information.
 func Diff(comp comparable.Comparable) Results {
-	return wagnerDiff(-1)(comp)
+	return hirschbergDiff(-1, true)(comp)
+	//return wagnerDiff(-1)(comp)
 }

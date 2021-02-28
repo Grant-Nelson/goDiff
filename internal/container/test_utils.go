@@ -8,25 +8,29 @@ import (
 	"github.com/Grant-Nelson/goDiff/comparable"
 )
 
+// AAdjust gets the A index adjusted by the container's condition.
+func (cont *Container) AAdjust(aIndex int) int {
+	if cont.reverse {
+		return cont.aLength - 1 - aIndex + cont.aOffset
+	}
+	return aIndex + cont.aOffset
+}
+
+// BAdjust gets the B index adjusted by the container's condition.
+func (cont *Container) BAdjust(bIndex int) int {
+	if cont.reverse {
+		return cont.bLength - 1 - bIndex + cont.bOffset
+	}
+	return bIndex + cont.bOffset
+}
+
 // AParts gets the strings from the comparable which are
 // represented by this comparable.
 // This only works for String or RuneSlice comparables.
 func (cont *Container) AParts() []string {
-	var fetchValue func(int) string
-	switch comp := cont.comp.(type) {
-	case *comparable.String:
-		fetchValue = comp.AValue
-	case *comparable.RuneSlice:
-		fetchValue = func(aIndex int) string {
-			return string(comp.AValue(aIndex))
-		}
-	default:
-		return []string{`Unexpected Comparable Type`}
-	}
-
 	parts := make([]string, cont.aLength)
 	for i := 0; i < cont.aLength; i++ {
-		parts[i] = fetchValue(cont.aAdjust(i))
+		parts[i] = comparable.APart(cont.comp, cont.AAdjust(i))
 	}
 	return parts
 }
@@ -35,29 +39,15 @@ func (cont *Container) AParts() []string {
 // represented by this comparable.
 // This only works for String or RuneSlice comparables.
 func (cont *Container) BParts() []string {
-	var fetchValue func(int) string
-	switch comp := cont.comp.(type) {
-	case *comparable.String:
-		fetchValue = comp.BValue
-	case *comparable.RuneSlice:
-		fetchValue = func(bIndex int) string {
-			return string(comp.BValue(bIndex))
-		}
-	default:
-		return []string{`Unexpected Comparable Type`}
-	}
-
 	parts := make([]string, cont.bLength)
 	for j := 0; j < cont.bLength; j++ {
-		parts[j] = fetchValue(cont.bAdjust(j))
+		parts[j] = comparable.BPart(cont.comp, cont.BAdjust(j))
 	}
 	return parts
 }
 
 // String gets the string for debugging a container.
 func (cont *Container) String() string {
-	return fmt.Sprint(
-		cont.aOffset, ", ", cont.aLength, ", ",
-		cont.bOffset, ", ", cont.bLength, ", ",
-		cont.reverse)
+	return fmt.Sprintf(`%d, %d, %d, %d, %t`,
+		cont.aOffset, cont.aLength, cont.bOffset, cont.bLength, cont.reverse)
 }

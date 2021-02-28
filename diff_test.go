@@ -121,13 +121,13 @@ func TestFormatting(t *testing.T) {
 			` would not be helping to`,
 			`-compress the size of the`,
 			`-changes.`,
-			`-`,
+			`+compress anything.`,
+			` `,
 			`-This paragraph contains`,
 			`-text that is outdated.`,
 			`-It will be deleted in the`,
 			`-near future.`,
-			`+compress anything.`,
-			` `,
+			`-`,
 			` It is important to spell`,
 			`-check this dokument. On`,
 			`+check this document. On`,
@@ -162,15 +162,18 @@ func TestFormatting(t *testing.T) {
 			`<<<<<<<<`,
 			`compress the size of the`,
 			`changes.`,
-			``,
-			`This paragraph contains`,
-			`text that is outdated.`,
-			`It will be deleted in the`,
-			`near future.`,
 			`========`,
 			`compress anything.`,
 			`>>>>>>>>`,
 			``,
+			`<<<<<<<<`,
+			`This paragraph contains`,
+			`text that is outdated.`,
+			`It will be deleted in the`,
+			`near future.`,
+			``,
+			`========`,
+			`>>>>>>>>`,
 			`It is important to spell`,
 			`<<<<<<<<`,
 			`check this dokument. On`,
@@ -199,17 +202,7 @@ func lines(ln ...string) []string {
 
 // checks the levenshtein distance algorithm
 func checkLP(t *testing.T, a, b, exp string) {
-	aParts := []string{}
-	for _, part := range a {
-		aParts = append(aParts, string([]rune{part}))
-	}
-
-	bParts := []string{}
-	for _, part := range b {
-		bParts = append(bParts, string([]rune{part}))
-	}
-
-	path := Diff(comparable.NewString(aParts, bParts))
+	path := Diff(comparable.NewChar(a, b))
 	parts := make([]string, 0, path.Count())
 	path.Read(func(stepType step.Type, count int) {
 		parts = append(parts, fmt.Sprintf("%s%d", stepType.String(), count))

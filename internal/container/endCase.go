@@ -27,6 +27,9 @@ func Min3(a, b, c int) int {
 	return c
 }
 
+// EndCase determines if the given container is small enough to be simply added
+// into the collector without any diff algorithm. This will add into the given
+// collector and return true if done, otherwise it will return false.
 func EndCase(cont *Container, col *collector.Collector) bool {
 	aLen := cont.ALength()
 	if aLen <= 1 {
@@ -55,7 +58,7 @@ func aEdge(cont *Container, col *collector.Collector) {
 
 	split := -1
 	for j := 0; j < bLen; j++ {
-		if cont.Equals(0, j) {
+		if cont.Equals(0, j) { // TODO: Optimise this scan.
 			split = j
 			break
 		}
@@ -83,7 +86,7 @@ func bEdge(cont *Container, col *collector.Collector) {
 
 	split := -1
 	for i := 0; i < aLen; i++ {
-		if cont.Equals(i, 0) {
+		if cont.Equals(i, 0) { // TODO: Optimise this scan.
 			split = i
 			break
 		}

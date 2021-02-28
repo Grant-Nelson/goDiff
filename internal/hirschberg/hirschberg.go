@@ -5,9 +5,9 @@ import (
 	"github.com/Grant-Nelson/goDiff/internal/container"
 )
 
-// hirschberg will perform a hybrid Hirschberg/Wagner diff on the given comparable.
+// hirschberg will perform a Hirschberg with an optional hybrid diff on the given comparable.
 // The base algorithm is a Hirschberg's algorithm (https://en.wikipedia.org/wiki/Hirschberg%27s_algorithm)
-// used to divide the problem space until the threshold is reached to switch to Wagner.
+// used to divide the problem space until the threshold is reached to switch to the hybrid (usually Wagner).
 type hirschberg struct {
 	scores    *scores
 	hybrid    container.Diff

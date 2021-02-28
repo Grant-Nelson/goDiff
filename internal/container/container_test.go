@@ -58,3 +58,5 @@ func Test_Reduce(t *testing.T) {
 	reduceCheck(t, newCont(`a b c`, ``), `a b c`, ``, 0, 0)
 	reduceCheck(t, newCont(``, `a b c`), ``, `a b c`, 0, 0)
 }
+
+// TODO: Add more tests including tests of sub and reduce/reverse

@@ -68,22 +68,6 @@ func New(comp comparable.Comparable) *Container {
 		false)
 }
 
-// aAdjust gets the A index adjusted by the container's condition.
-func (cont *Container) aAdjust(aIndex int) int {
-	if cont.reverse {
-		return cont.aLength - 1 - aIndex + cont.aOffset
-	}
-	return aIndex + cont.aOffset
-}
-
-// bAdjust gets the B index adjusted by the container's condition.
-func (cont *Container) bAdjust(bIndex int) int {
-	if cont.reverse {
-		return cont.bLength - 1 - bIndex + cont.bOffset
-	}
-	return bIndex + cont.bOffset
-}
-
 // ALength is the length of the first list being compared.
 func (cont *Container) ALength() int {
 	return cont.aLength
@@ -96,7 +80,15 @@ func (cont *Container) BLength() int {
 
 // Equals determines if the entries in the two given indices are equal.
 func (cont *Container) Equals(aIndex, bIndex int) bool {
-	return cont.comp.Equals(cont.aAdjust(aIndex), cont.bAdjust(bIndex))
+	if cont.reverse {
+		return cont.comp.Equals(
+			cont.aLength-1-aIndex+cont.aOffset,
+			cont.bLength-1-bIndex+cont.bOffset)
+	}
+
+	return cont.comp.Equals(
+		aIndex+cont.aOffset,
+		bIndex+cont.bOffset)
 }
 
 // SubstitionCost determines the substition cost for the given indices.
@@ -111,36 +103,54 @@ func (cont *Container) SubstitionCost(i, j int) int {
 func (cont *Container) Sub(aLow, aHigh, bLow, bHigh int, reverse bool) *Container {
 	if cont.reverse {
 		return newSub(cont.comp,
-			cont.aAdjust(aHigh), aHigh-aLow,
-			cont.bAdjust(bHigh), bHigh-bLow,
+			cont.aLength-1-aHigh+cont.aOffset, aHigh-aLow,
+			cont.bLength-1-bHigh+cont.bOffset, bHigh-bLow,
 			!reverse)
 	}
+
 	return newSub(cont.comp,
-		cont.aAdjust(aLow), aHigh-aLow,
-		cont.bAdjust(bLow), bHigh-bLow,
+		aLow+cont.aOffset, aHigh-aLow,
+		bLow+cont.bOffset, bHigh-bLow,
 		reverse)
 }
 
 // Reduce determines how much of the edges of this container are equal.
 // The amount before and after which are equal are returned and
 // the reduced subcontainer is returned.
-func (cont *Container) Reduce() (sub *Container, before, after int) {
+func (cont *Container) Reduce() (*Container, int, int) {
+	before := 0
+	after := 0
 	width := Min2(cont.aLength, cont.bLength)
+	i := cont.aOffset
+	j := cont.bOffset
 	for before = 0; before < width; before++ {
-		if !cont.Equals(before, before) {
+		if !cont.comp.Equals(i, j) {
 			break
 		}
+		i++
+		j++
 	}
 
 	width = width - before
+	i = cont.aLength - 1 + cont.aOffset
+	j = cont.bLength - 1 + cont.bOffset
 	for after = 0; after < width; after++ {
-		if !cont.Equals(cont.aLength-1-after, cont.bLength-1-after) {
+		if !cont.comp.Equals(i, j) {
 			break
 		}
+		i--
+		j--
 	}
 
-	return cont.Sub(
-		before, cont.aLength-after,
-		before, cont.bLength-after,
-		cont.reverse), before, after
+	if cont.reverse {
+		return newSub(cont.comp,
+			before-1+cont.aOffset, cont.aLength-after-before,
+			before-1+cont.bOffset, cont.bLength-after-before,
+			false), after, before
+	}
+
+	return newSub(cont.comp,
+		before+cont.aOffset, cont.aLength-after-before,
+		before+cont.bOffset, cont.bLength-after-before,
+		false), before, after
 }

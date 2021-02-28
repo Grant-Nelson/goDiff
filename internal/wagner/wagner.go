@@ -67,7 +67,7 @@ func (w *wagner) setCosts(cont *container.Container) {
 
 	for j := 1; j < bLen; j++ {
 		for i := 1; i < aLen; i++ {
-			k := i + j*aLen
+			k := i + j*aLen // TODO: Optimize this scan
 			value := container.Min3(
 				w.costs[k-1]+1,
 				w.costs[k-aLen]+1,
