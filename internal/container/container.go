@@ -119,28 +119,20 @@ func (cont *Container) Sub(aLow, aHigh, bLow, bHigh int, reverse bool) *Containe
 // The amount before and after which are equal are returned and
 // the reduced subcontainer is returned.
 func (cont *Container) Reduce() (*Container, int, int) {
-	before := 0
-	after := 0
-	width := Min2(cont.aLength, cont.bLength)
-	i := cont.aOffset
-	j := cont.bOffset
-	for before = 0; before < width; before++ {
+	var before, after, i, j, width int
+
+	width = Min2(cont.aLength, cont.bLength)
+	for before, i, j = 0, cont.aOffset, cont.bOffset; before < width; before, i, j = before+1, i+1, j+1 {
 		if !cont.comp.Equals(i, j) {
 			break
 		}
-		i++
-		j++
 	}
 
 	width = width - before
-	i = cont.aLength - 1 + cont.aOffset
-	j = cont.bLength - 1 + cont.bOffset
-	for after = 0; after < width; after++ {
+	for after, i, j = 0, cont.aLength-1+cont.aOffset, cont.bLength-1+cont.bOffset; after < width; after, i, j = after+1, i-1, j-1 {
 		if !cont.comp.Equals(i, j) {
 			break
 		}
-		i--
-		j--
 	}
 
 	sub := newSub(cont.comp,

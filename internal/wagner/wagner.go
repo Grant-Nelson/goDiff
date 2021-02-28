@@ -5,8 +5,8 @@ import (
 	"github.com/Grant-Nelson/goDiff/internal/container"
 )
 
-// Wagner–Fischer algorithm
-// (https://en.wikipedia.org/wiki/Wagner%E2%80%93Fischer_algorithm)
+// wagner will perform a Wagner–Fischer diff on the given comparable.
+// The algorithm is a Wagner–Fischer's algorithm (https://en.wikipedia.org/wiki/Wagner%E2%80%93Fischer_algorithm).
 type wagner struct {
 	costs []int
 }
@@ -46,6 +46,8 @@ func (w *wagner) Diff(cont *container.Container, col *collector.Collector) {
 	w.walkPath(cont, col)
 }
 
+// setCosts will populate the part of the cost matrix which is needed by the given container.
+// The costs are based off of the equality of parts in the comparable in the given container.
 func (w *wagner) setCosts(cont *container.Container) {
 	aLen := cont.ALength()
 	bLen := cont.BLength()
@@ -65,18 +67,18 @@ func (w *wagner) setCosts(cont *container.Container) {
 		w.costs[k] = value
 	}
 
-	for j := 1; j < bLen; j++ {
-		for i := 1; i < aLen; i++ {
-			k := i + j*aLen // TODO: Optimize this scan
-			value := container.Min3(
-				w.costs[k-1]+1,
-				w.costs[k-aLen]+1,
-				w.costs[k-aLen-1]+cont.SubstitionCost(i, j))
+	for j, k, k2, k3 := 1, aLen+1, 1, 0; j < bLen; j, k, k2, k3 = j+1, k+1, k2+1, k3+1 {
+		for i, value := 1, w.costs[k-1]; i < aLen; i, k, k2, k3 = i+1, k+1, k2+1, k3+1 {
+			value = container.Min3(value+1,
+				w.costs[k2]+1,
+				w.costs[k3]+cont.SubstitionCost(i, j))
 			w.costs[k] = value
 		}
 	}
 }
 
+// getCost gets the cost value at the given indices.
+// If the indices are out-of-bounds the edge cost will be returned.
 func (w *wagner) getCost(i, j, aLen int) int {
 	if i < 0 {
 		return j + 1
@@ -87,6 +89,8 @@ func (w *wagner) getCost(i, j, aLen int) int {
 	return w.costs[i+j*aLen]
 }
 
+// walkPath will walk through the cost matrix backwards to find the minimum Levenshtein path.
+// The steps for this path are added to the given collector.
 func (w *wagner) walkPath(cont *container.Container, col *collector.Collector) {
 	aLen := cont.ALength()
 	walk := newWalker(cont, col)
@@ -96,7 +100,7 @@ func (w *wagner) walkPath(cont *container.Container, col *collector.Collector) {
 		cCost := w.getCost(walk.i-1, walk.j-1, aLen)
 		minCost := container.Min3(aCost, bCost, cCost)
 
-		var curMove func()
+		var curMove walkerStep
 		if aCost == minCost {
 			curMove = walk.moveA
 		}
