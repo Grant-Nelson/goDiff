@@ -1,118 +1,101 @@
-package diff
+package godiff
 
-// StringSlicePath gets the difference path for the two given string slices.
-func StringSlicePath(a, b []string) []Step {
-	return Path(newStrSliceComp(a, b))
-}
+import (
+	"github.com/Grant-Nelson/goDiff/comparable"
+	"github.com/Grant-Nelson/goDiff/internal/collector"
+	"github.com/Grant-Nelson/goDiff/internal/container"
+	"github.com/Grant-Nelson/goDiff/internal/hirschberg"
+	"github.com/Grant-Nelson/goDiff/internal/wagner"
+	"github.com/Grant-Nelson/goDiff/step"
+)
 
-// RuneSlicesPath gets the difference path for the two given runes slices.
-func RuneSlicesPath(a, b [][]rune) []Step {
-	return Path(newRuneSliceComp(a, b))
-}
+type (
+	// Results are the result from a diff.
+	Results interface {
 
-// Path gets the difference path for the given comparable.
-func Path(comp Comparable) []Step {
-	path := []Step{}
-	WalkPath(comp, func(step Step) {
-		path = append(path, step)
-	})
-	return path
-}
+		// Count is the number of steps in this diff.
+		Count() int
 
-// PlusMinus gets the labelled difference between the two slices.
-// It formats the results by prepending a "+" to new strings in [b],
-// a "-" for any to removed strings from [a], and " " if the strings are the same.
-func PlusMinus(a, b []string) []string {
-	result := []string{}
-	aIndex, bIndex := 0, 0
-	path := StringSlicePath(a, b)
-	for _, step := range path {
-		switch step.Type {
-		case Equal:
-			for i := step.Count - 1; i >= 0; i-- {
-				result = append(result, " "+a[aIndex])
-				aIndex++
-				bIndex++
-			}
-		case Added:
-			for i := step.Count - 1; i >= 0; i-- {
-				result = append(result, "+"+b[bIndex])
-				bIndex++
-			}
-		case Removed:
-			for i := step.Count - 1; i >= 0; i-- {
-				result = append(result, "-"+a[aIndex])
-				aIndex++
-			}
+		// Total is the total number of parts represented by this diff.
+		// The total sum of all the counts in each step.
+		Total() int
+
+		// Read will read the steps to take for this diff.
+		Read(hndl step.PathCallback)
+	}
+
+	// Algorithm is an instance of a diff algorithm configuration which can be used
+	// multiple times for different input. This can help reduce memory pressure by
+	// reusing already allocated buffers.
+	Algorithm func(comp comparable.Comparable) Results
+)
+
+// DefaultWagnerThreshold is the point at which the algorithms switch from Hirschberg
+// to Wagner-Fischer. When both length of the comparable are smaller than this value
+// Wagner-Fischer is used. The Wagner matrix will never be larger than this value of entries.
+// If this is less than 4 the Wagner algorithm will not be used.
+const DefaultWagnerThreshold = 500
+
+// check that the collector can be used as the resulting diff.
+var _ Results = (*collector.Collector)(nil)
+
+// wrap wraps an instance of a Diff into an Algorithm.
+func wrap(diff container.Diff) Algorithm {
+	return func(comp comparable.Comparable) Results {
+		col := collector.New()
+		cont := container.New(comp)
+		cont, before, after := cont.Reduce()
+		col.InsertEqual(after)
+		if !cont.EndCase(col) {
+			diff.Diff(cont, col)
 		}
+		col.InsertEqual(before)
+		col.Finish()
+		return col
 	}
-	return result
 }
 
-// Merge gets the labelled difference between the two slices
-// using a similar output to the git merge differences output.
-func Merge(a, b []string) []string {
-	result := []string{}
-	aIndex, bIndex := 0, 0
-	path := StringSlicePath(a, b)
+// HirschbergDiff creates a new Hirschberg algorithm instance for performing a diff.
+//
+// The given length is the initial score vector size. If the vector is too small it will be
+// reallocated to the larger size. Use -1 to not preallocate the vectors.
+// The useReduce flag indicates if the equal padding edges should be checked
+// at each step of the algorithm or not.
+func HirschbergDiff(length int, useReduce bool) Algorithm {
+	return wrap(hirschberg.New(nil, length, useReduce))
+}
 
-	const (
-		startChange  = "<<<<<<<<"
-		middleChange = "========"
-		endChange    = ">>>>>>>>"
-	)
+// WagnerDiff creates a new Wagner-Fischer algorithm instance for performing a diff.
+//
+// The given size is the amount of matrix space, width * height, to preallocate
+// for the Wagner-Fischer algorithm. Use -1 to not preallocate any matrix.
+func WagnerDiff(size int) Algorithm {
+	return wrap(wagner.New(size))
+}
 
-	prevState := Equal
-	for _, step := range path {
-		switch step.Type {
-		case Equal:
-			switch prevState {
-			case Added:
-				result = append(result, endChange)
-			case Removed:
-				result = append(result, middleChange)
-				result = append(result, endChange)
-			}
-			for i := step.Count - 1; i >= 0; i-- {
-				result = append(result, a[aIndex])
-				aIndex++
-				bIndex++
-			}
+// HybridDiff creates a new hybrid Hirschberg with Wagner-Fischer cutoff for performing a diff.
+//
+// The given length is the initial score vector size of the Hirschberg algorithm. If the vector
+// is too small it will be reallocated to the larger size. Use -1 to not preallocate the vectors.
+// The useReduce flag indicates if the equal padding edges should be checked
+// at each step of the algorithm or not.
+//
+// The given size is the amount of matrix space, width * height, to use for the Wagner-Fischer.
+// This must be greater than 4 fo use the cutoff. The larger the size, the more memory is used
+// creating the matrix but the earlier the Wagner-Fischer algorithm can take over.
+func HybridDiff(length int, useReduce bool, size int) Algorithm {
+	return wrap(hirschberg.New(wagner.New(size), length, useReduce))
+}
 
-		case Added:
-			switch prevState {
-			case Equal:
-				result = append(result, startChange)
-				result = append(result, middleChange)
-			case Removed:
-				result = append(result, middleChange)
-			}
-			for i := step.Count - 1; i >= 0; i-- {
-				result = append(result, b[bIndex])
-				bIndex++
-			}
+// DefaultDiff creates the default diff algorithm with default configuration.
+// The default is a hybrid Hirschberg with Wagner-Fischer using a reduction
+// at each step and the default Wagner threshold.
+func DefaultDiff() Algorithm {
+	return HybridDiff(-1, true, DefaultWagnerThreshold)
+}
 
-		case Removed:
-			switch prevState {
-			case Equal:
-				result = append(result, startChange)
-			case Added:
-				result = append(result, middleChange)
-			}
-			for i := step.Count - 1; i >= 0; i-- {
-				result = append(result, a[aIndex])
-				aIndex++
-			}
-		}
-		prevState = step.Type
-	}
-
-	switch prevState {
-	case Added:
-		result = append(result, endChange)
-	case Removed:
-		result = append(result, middleChange)
-		result = append(result, endChange)
-	}
-	return result
+// Diff will perform a diff on the given comparable information.
+// This will use a new instance of the default diff configuration.
+func Diff(comp comparable.Comparable) Results {
+	return DefaultDiff()(comp)
 }
