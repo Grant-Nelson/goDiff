@@ -2,6 +2,7 @@ package godiff
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Grant-Nelson/goDiff/comparable"
@@ -88,6 +89,23 @@ func runBenchmarks(b *testing.B, comp comparable.Comparable, suffix string) {
 func Benchmark_Simple_Comparison(b *testing.B) {
 	comp := comparable.NewString(exampleA, exampleB)
 	runBenchmarks(b, comp, ``)
+}
+
+func Benchmark_Default_Reuse(b *testing.B) {
+	comp := comparable.NewString(strings.Split(billNyeA, ` `), strings.Split(billNyeB, ` `))
+
+	b.Run(`Default-NoReused`, func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			DefaultDiff()(comp)
+		}
+	})
+
+	b.Run(`Default-Reused`, func(b *testing.B) {
+		diff := DefaultDiff()
+		for n := 0; n < b.N; n++ {
+			diff(comp)
+		}
+	})
 }
 
 func Benchmark_Basic_Comparison(b *testing.B) {

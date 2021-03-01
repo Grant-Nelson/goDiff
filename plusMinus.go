@@ -8,8 +8,20 @@ import (
 // PlusMinus gets the labelled difference between the two slices.
 // It formats the results by prepending a "+" to new strings in [b],
 // a "-" for any to removed strings from [a], and " " if the strings are the same.
+// This will use the default diff configuration to perform the diff.
 func PlusMinus(a, b []string) []string {
-	path := Diff(comparable.NewString(a, b))
+	return PlusMinusCustom(nil, a, b)
+}
+
+// PlusMinusCustom gets the labelled difference between the two slices.
+// It formats the results by prepending a "+" to new strings in [b],
+// a "-" for any to removed strings from [a], and " " if the strings are the same.
+// This was can use any given diff algorithm.
+func PlusMinusCustom(diff Algorithm, a, b []string) []string {
+	if diff == nil {
+		diff = DefaultDiff()
+	}
+	path := diff(comparable.NewString(a, b))
 
 	result := make([]string, 0, path.Total())
 	aIndex, bIndex := 0, 0

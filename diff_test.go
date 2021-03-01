@@ -66,7 +66,7 @@ var (
 		`to this document.`)
 )
 
-func TestLevenshteinDistance(t *testing.T) {
+func Test_Diff_Basics(t *testing.T) {
 	checkLP(t, "A", "A", "=1")
 	checkLP(t, "A", "B", "-1 +1")
 	checkLP(t, "A", "AB", "=1 +1")
@@ -79,7 +79,23 @@ func TestLevenshteinDistance(t *testing.T) {
 	checkLP(t, "ABC", "ADB", "=1 +1 =1 -1")
 }
 
-func TestPartDiff(t *testing.T) {
+func Test_Diff_Words(t *testing.T) {
+	wordsA := strings.Split(billNyeA, ` `)
+	wordsB := strings.Split(billNyeB, ` `)
+	path := Diff(comparable.NewString(wordsA, wordsB))
+	result := path.(*collector.Collector).String()
+
+	exp := `=1 -9 +1 =1 -9 +7 =1 -17 +8 =1 -7 +15 =1 -4 +7`
+	if exp != result {
+		t.Error("Diff returned unexpected result:",
+			"\n   Input A:  ", wordsA,
+			"\n   Input B:  ", wordsB,
+			"\n   Expected: ", exp,
+			"\n   Result:   ", result)
+	}
+}
+
+func Test_Diff_Parts(t *testing.T) {
 	checkDiff(t, ",",
 		"cat,dog,pig",
 		"cat,horse,dog",
